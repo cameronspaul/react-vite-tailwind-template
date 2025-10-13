@@ -1,0 +1,73 @@
+:root {
+  /* Light theme tokens */
+  --color-background: oklch(98.5% 0.004 250);
+  --color-foreground: oklch(20% 0.02 250);
+
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(22% 0.02 250);
+
+  --color-muted: oklch(96% 0.01 250);
+  --color-muted-foreground: oklch(45% 0.02 250);
+
+  --color-border: oklch(90% 0.02 250);
+  --color-input: oklch(98.5% 0.004 250);
+  --color-ring: oklch(65% 0.18 230);
+
+  --color-primary: oklch(65% 0.18 230);
+  --color-primary-foreground: oklch(98% 0.004 250);
+
+  --color-destructive: oklch(60% 0.25 24);
+  --color-destructive-foreground: oklch(98% 0.004 250);
+}
+
+:root[data-theme="dark"],
+:root.dark {
+  /* Dark theme tokens */
+  --color-background: oklch(18% 0.02 250);
+  --color-foreground: oklch(98% 0.004 250);
+
+  --color-card: oklch(24% 0.02 250);
+  --color-card-foreground: oklch(98% 0.004 250);
+
+  --color-muted: oklch(28% 0.02 250);
+  --color-muted-foreground: oklch(80% 0.02 250);
+
+  --color-border: oklch(35% 0.02 250);
+  --color-input: oklch(24% 0.02 250);
+  --color-ring: oklch(70% 0.12 230);
+
+  --color-primary: oklch(70% 0.12 230);
+  --color-primary-foreground: oklch(15% 0.02 250);
+
+  --color-destructive: oklch(55% 0.23 24);
+  --color-destructive-foreground: oklch(98% 0.004 250);
+}
+@import "tailwindcss";
+
+/* Base styles that respond to theme tokens */
+html, body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+/* Semantic utility shims to ensure theme works even if Tailwind tokens aren't picked up */
+.bg-background { background-color: var(--color-background); }
+.text-foreground { color: var(--color-foreground); }
+.bg-card { background-color: var(--color-card); }
+.text-card-foreground { color: var(--color-card-foreground); }
+.bg-muted { background-color: var(--color-muted); }
+.text-muted-foreground { color: var(--color-muted-foreground); }
+.border-border { border-color: var(--color-border); }
+.bg-input { background-color: var(--color-input); }
+.bg-primary { background-color: var(--color-primary); }
+.text-primary-foreground { color: var(--color-primary-foreground); }
+.text-destructive { color: var(--color-destructive); }
+
+/* Ring and placeholder helpers matching Tailwind’s class names */
+.ring-primary { --tw-ring-color: var(--color-primary); }
+.focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); }
+.placeholder\:text-muted-foreground::placeholder { color: var(--color-muted-foreground); }
+
+/* Hover variants used in components */
+.hover\:bg-primary\/90:hover { background-color: color-mix(in oklch, var(--color-primary) 90%, transparent); }
+.hover\:bg-muted:hover { background-color: var(--color-muted); }

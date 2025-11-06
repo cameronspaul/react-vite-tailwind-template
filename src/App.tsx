@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import Form from './pages/Form'
+import Home from './pages/TemplateHome'
 import { useAppStore } from './stores/useAppStore'
+import { Header } from './components/Header'
 
 function App() {
   const theme = useAppStore((s) => s.theme)
@@ -16,10 +16,15 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/form" element={<Form />} />
-      </Routes>
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Routes>
+            <Route path="/" element={<Home />} />
+          </Routes>
+        </main>
+      </div>
     </BrowserRouter>
   )
 }

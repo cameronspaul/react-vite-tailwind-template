@@ -1,148 +1,273 @@
-# React + Vite + Tailwind Template
+# react-vite-tailwind-template
 
-This is a streamlined template for building modern React applications using Vite as the build tool and Tailwind CSS for styling. It combines the power of React's component-based architecture with Vite's fast development experience and Tailwind's utility-first CSS framework to provide a robust foundation for your projects.
+A modern, production-ready React template with authentication, real-time data, and comprehensive tooling. This template combines the best of React's ecosystem with Convex's backend-as-a-service for rapid application development.
 
-## Features
+## ✨ Features
 
-- **React 19**: Latest version of React with modern hooks and concurrent features
-- **Vite**: Lightning-fast build tool with hot module replacement
-- **Tailwind CSS 4**: Utility-first CSS framework integrated via Vite plugin
-- **TypeScript**: Full TypeScript support for type safety
-- **ES Modules**: Modern module system for better tree-shaking
+- **🚀 Modern React Stack** - React 19 with TypeScript, Vite, and Tailwind CSS v4
+- **🔐 Authentication Ready** - OAuth integration with GitHub and Google via Convex Auth
+- **📊 Real-time Database** - Convex backend with auto-generated type-safe API
+- **🎨 Beautiful UI** - Dark/light theme with semantic design tokens
+- **⚡ Fast Development** - Hot module replacement and optimized build pipeline
+- **📱 Responsive Design** - Mobile-first approach with Tailwind utilities
+- **🔧 Developer Experience** - Strict TypeScript, comprehensive tooling, and clear conventions
 
-- **React Router DOM**: Client-side routing for navigation between pages
-- **Zustand**: Lightweight state management for React applications
-- **TanStack Query**: Powerful data fetching and caching for API interactions
-- **React Helmet Async**: Dynamic document head management for SEO
-- **React Hook Form**: Performant form handling with validation
-- **Lucide React**: Beautiful and customizable SVG icons
-- **React Hot Toast**: Toast notifications for user feedback
-- **Theme Toggle**: Dark/light mode switching with Zustand persistence
-- **Comprehensive .gitignore**: Includes common ignore patterns for Node.js, React, and Vite projects
+## 🚀 Quick Start
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (version 18 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone or download this template
-2. Navigate to the project directory
-3. Install dependencies:
+Get your application running in minutes:
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd react-vite-tailwind-template
+
+# Install dependencies
 npm install
-```
 
-### Development
+# Set up environment variables
+cp .env.local.example .env.local
+# Edit .env.local with your Convex and OAuth credentials
 
-Start the development server:
+# Start Convex backend (in a separate terminal)
+npx convex dev
 
-```bash
+# Start the development server
 npm run dev
 ```
 
-This will start the Vite dev server with hot module replacement.
+Visit `http://localhost:5173` to see your application running!
 
-### Build
-
-Build for production:
-
-```bash
-npm run build
-```
-
-### Preview
-
-Preview the production build:
-
-```bash
-npm run preview
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-react-vite-tailwind-template/
-├── public/
-│   ├── react.svg
-│   ├── tailwind.svg
-│   └── vite.svg
 ├── src/
-│   ├── components/
-│   │   └── ContactForm.tsx
-│   ├── pages/
-│   │   ├── Form.tsx
-│   │   └── Home.tsx
-│   ├── stores/
-│   │   └── useAppStore.ts
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── theme.css
-├── index.html
-├── package.json
-├── tsconfig.json
-├── vite.config.ts
-└── README.md
+│   ├── components/          # Reusable React components
+│   │   ├── Auth.tsx        # Authentication components
+│   │   └── Header.tsx      # Main header with theme toggle
+│   ├── pages/              # Route-level page components
+│   │   └── TemplateHome.tsx # Home page
+│   ├── stores/             # State management
+│   │   └── useAppStore.ts  # Zustand store for app state
+│   ├── App.tsx             # Main application component
+│   ├── main.tsx            # Application entry point
+│   └── theme.css           # CSS theme variables
+├── convex/                 # Convex backend
+│   ├── schema.ts           # Database schema definition
+│   ├── auth.config.ts      # Authentication configuration
+│   ├── auth.ts             # Authentication logic
+│   ├── users.ts            # User-related functions
+│   └── _generated/         # Auto-generated types and API
+├── public/                 # Static assets
+└── config files            # TypeScript, Vite, and Tailwind configs
 ```
 
-## Technologies Used
+## 🏗️ Architecture Overview
 
-### Dependencies
-- **@tailwindcss/vite**: `^4.1.14` - Tailwind CSS Vite plugin
-- **react**: `^19.1.1` - React library
-- **react-dom**: `^19.1.1` - React DOM rendering
-- **react-hook-form**: `^7.64.0` - Performant form library with validation
-- **react-router-dom**: `^7.9.4` - Routing library for React
-- **zustand**: `^5.0.8` - Simple state management library
-- **@tanstack/react-query**: `^5.90.2` - Data fetching and caching library
-- **@tanstack/react-query-devtools**: `^5.90.2` - Developer tools for React Query
-- **lucide-react**: `^0.545.0` - Beautiful SVG icons
-- **react-helmet-async**: `^2.0.5` - Dynamic document head management
-- **react-hot-toast**: `^2.6.0` - Toast notifications
+### Provider Stack
 
-### Dev Dependencies
-- **@types/node**: `^24.6.0` - TypeScript types for Node.js
-- **@types/react**: `^19.1.16` - TypeScript types for React
-- **@types/react-dom**: `^19.1.9` - TypeScript types for React DOM
-- **@vitejs/plugin-react**: `^5.0.4` - Vite plugin for React
-- **typescript**: `~5.9.3` - TypeScript compiler
-- **vite**: `^7.1.7` - Vite build tool
+The application uses a layered provider architecture in [`main.tsx`](src/main.tsx):
 
-## Customization
+```tsx
+<StrictMode>
+  <HelmetProvider>
+    <QueryClientProvider>
+      <ConvexAuthProvider>
+        <Toaster />
+        <App />
+      </ConvexAuthProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
+</StrictMode>
+```
 
-### Tailwind Configuration
+### Key Technologies
 
-Tailwind CSS is configured via the `@tailwindcss/vite` plugin in `vite.config.ts`. You can customize your design system by modifying the Tailwind directives in `src/index.css`.
+| Category | Technology | Version | Purpose |
+|----------|------------|---------|---------|
+| **Project** | react-vite-tailwind-template | 0.0.0 | Project name and version |
+| **Frontend** | React | 19.1.1 | UI library |
+| | React DOM | 19.1.1 | React DOM renderer |
+| | TypeScript | 5.9.3 | Type safety |
+| | Vite | 7.1.7 | Build tool & dev server |
+| | Tailwind CSS | 4.1.14 | Styling framework |
+| | @tailwindcss/vite | 4.1.14 | Tailwind Vite integration |
+| | React Router DOM | 7.9.4 | Client-side routing |
+| | React Helmet Async | 2.0.5 | Head management |
+| | Lucide React | 0.545.0 | Icon library |
+| | React Hook Form | 7.64.0 | Form handling |
+| | React Hot Toast | 2.6.0 | Toast notifications |
+| **State Management** | Zustand | 5.0.8 | Client state |
+| | TanStack Query | 5.90.2 | Server state |
+| | TanStack React Query DevTools | 5.90.2 | Query debugging |
+| **Backend** | Convex | 1.28.2 | Backend-as-a-Service |
+| | @convex-dev/auth | 0.0.90 | Authentication |
+| | @auth/core | 0.37.0 | Authentication core |
+| **Development** | @types/node | 24.6.0 | Node.js type definitions |
+| | @types/react | 19.1.16 | React type definitions |
+| | @types/react-dom | 19.1.9 | React DOM type definitions |
+| | @vitejs/plugin-react | 5.0.4 | Vite React plugin |
 
-### React Router Configuration
+### Theme System
 
-The template includes basic routing setup with React Router DOM. Add new routes in `src/App.tsx` by adding more `<Route>` components inside `<Routes>`. Create new page components in the `src/pages/` directory.
+The template includes a comprehensive theming system with:
 
-### State Management
+- **Semantic Design Tokens** - CSS custom properties for consistent styling
+- **Dark/Light Mode** - Persistent theme switching with Zustand
+- **Responsive Design** - Mobile-first approach with Tailwind utilities
 
-The template provides a comprehensive state management setup following best practices:
+```css
+:root {
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(240 10% 3.9%);
+  --color-primary: hsl(240 5.9% 10%);
+}
 
-- **Zustand for Client State**: Use for app-wide state like user preferences, UI states, or any client-side data that doesn't come from APIs. The template includes a basic store (`src/stores/useAppStore.ts`) with theme state and persistence.
+:root.dark {
+  --color-background: hsl(240 10% 3.9%);
+  --color-foreground: hsl(0 0% 98%);
+  --color-primary: hsl(0 0% 98%);
+}
+```
 
-- **TanStack Query for Server State**: Handles data fetching, caching, synchronization, and mutations for API interactions. Configured globally in `src/main.tsx` with DevTools for development.
+## 🔧 Development Guide
 
-- **React Hook Form for Form State**: Efficiently manages form inputs, validation, and submission. A basic example is in `src/components/ContactForm.tsx`. Integrates with TanStack Query's `useMutation` for API submissions and Zustand for form-related global state.
+### Environment Setup
 
-This separation keeps your codebase clean and efficient—server state (APIs) managed by React Query, client state (UI/app logic) by Zustand, and form state by React Hook Form. For complex workflows, forms can trigger mutations that update query caches and Zustand stores.
+1. **Copy environment template:**
+   ```bash
+   cp .env.local.example .env.local
+   ```
 
-### Vite Configuration
+2. **Configure required variables:**
+   - `CONVEX_DEPLOYMENT` - Production Convex deployment URL
+   - `VITE_CONVEX_URL` - Local Convex development URL
+   - `GOOGLE_CLIENT_ID/SECRET` - Google OAuth credentials
+   - `GITHUB_CLIENT_ID/SECRET` - GitHub OAuth credentials
 
-Modify `vite.config.ts` to add plugins, configure build options, or set up aliases.
-Added Host to allow for local testing
+### Development Commands
 
-## Contributing
+```bash
+# Start development server
+npm run dev
 
-This is a template repository. Feel free to fork and customize it for your own projects.
+# Build for production (runs TypeScript check then Vite build)
+npm run build
 
-## License
+# Preview production build
+npm run preview
 
-This template is provided as-is for personal and commercial use.
+# Start Convex backend (separate terminal)
+npx convex dev
+```
+
+### Coding Standards
+
+#### Naming Conventions
+
+- **Components/Hooks:** PascalCase (`UserProfile.tsx`, `useUserData.ts`)
+- **Files:** PascalCase for components, camelCase for utilities
+- **Stores:** End with `Store.ts` (`useAppStore.ts`)
+- **Pages:** Follow `<Feature>Page.tsx` pattern
+
+#### Code Style
+
+- **Indentation:** 2 spaces
+- **TypeScript:** Strict mode enabled, no implicit `any`
+- **Components:** Functional components with hooks
+- **Styling:** Tailwind utility classes preferred
+
+#### Component Patterns
+
+**Authentication:**
+```tsx
+<Authenticated>
+  <UserProfileHeader />
+</Authenticated>
+<Unauthenticated>
+  <SignIn />
+</Unauthenticated>
+```
+
+**Data Fetching:**
+```tsx
+const currentUser = useQuery(api.users.getCurrentUser);
+const { signIn, signOut } = useAuthActions();
+```
+
+## 🔐 Authentication
+
+The template includes a complete authentication system with Convex Auth:
+
+### Supported Providers
+
+- **GitHub OAuth** - One-click authentication with GitHub accounts
+- **Google OAuth** - Sign in with Google accounts
+
+### Adding New Providers
+
+1. Update [`convex/auth.config.ts`](convex/auth.config.ts) with provider configuration
+2. Add environment variables for client ID/secret
+3. Configure OAuth app in the provider's developer console
+
+### User Data Structure
+
+Users are stored with the following information:
+- Profile image and name
+- Email address
+- Authentication provider
+- Account creation and last login timestamps
+
+## 📊 Database Schema
+
+The Convex schema is defined in [`convex/schema.ts`](convex/schema.ts) and includes:
+
+```typescript
+// Authentication tables (auto-generated)
+export default defineSchema({
+  // Add your custom tables here
+  
+  // Example:
+  // posts: defineTable({
+  //   title: v.string(),
+  //   content: v.string(),
+  //   authorId: v.id("users"),
+  //   createdAt: v.number(),
+  // })
+    .index("by_author", ["authorId"]),
+});
+```
+
+## 🎨 Styling Guide
+
+### Tailwind CSS v4
+
+The template uses Tailwind CSS v4 with custom design tokens:
+
+```tsx
+// Use semantic tokens for consistent theming
+<div className="bg-background text-foreground border-border">
+  <h1 className="text-2xl font-bold text-primary">
+    Hello World
+  </h1>
+</div>
+```
+
+### Theme Implementation
+
+- **CSS Variables:** Defined in [`src/theme.css`](src/theme.css)
+- **State Management:** Theme state in [`src/stores/useAppStore.ts`](src/stores/useAppStore.ts)
+- **Application:** Applied via `data-theme` attribute and `.dark` class
+
+### Getting Help
+
+- Check the [Convex Documentation](https://docs.convex.dev/)
+- Review the [Vite Guide](https://vitejs.dev/guide/)
+- Consult the [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+
+## 📝 License
+
+This template is provided as-is for educational and commercial use. Please refer to the licenses of individual packages for specific terms.
+
+---
+
+**Built with ❤️ using React, Vite, Tailwind CSS, and Convex**

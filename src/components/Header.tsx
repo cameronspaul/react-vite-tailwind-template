@@ -4,6 +4,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
 import { Sun, Moon } from "lucide-react";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 export function SignIn() {
@@ -85,7 +86,15 @@ export function Header() {
     <header className="bg-card shadow-sm border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <h1 className="text-xl font-semibold text-foreground">Vite + React + Tailwind Template</h1>
+          <div className="flex items-center gap-6">
+            <h1 className="text-xl font-semibold text-foreground">Vite + React + Tailwind Template</h1>
+            <Link
+              to="/products"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Products
+            </Link>
+          </div>
           <div className="flex items-center gap-4">
             <button
               onClick={handleThemeToggle}

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/TemplateHome'
 import { useAppStore } from './stores/useAppStore'
 import { Header } from './components/Header'
+import { ProductList } from './components/ProductList'
 
 function App() {
   const theme = useAppStore((s) => s.theme)
@@ -22,6 +23,7 @@ function App() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/products" element={<ProductList />} />
           </Routes>
         </main>
       </div>

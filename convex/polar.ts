@@ -91,6 +91,18 @@ export const {
   cancelCurrentSubscription,
 } = polar.api();
 
+// Create a wrapper query that logs the results of listAllProducts
+export const listAllProductsWithLogging = query({
+  args: {},
+  handler: async (ctx) => {
+    console.log("Calling listAllProducts...");
+    // Use the polar instance to call listProducts directly
+    const products = await polar.listProducts(ctx);
+    console.log("listAllProducts result:", products);
+    return products;
+  },
+});
+
 // Get the current authenticated user with subscription information
 const getCurrentUserWithSubscription = async (ctx: QueryCtx) => {
   try {

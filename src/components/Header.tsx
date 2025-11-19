@@ -89,10 +89,10 @@ export function Header() {
           <div className="flex items-center gap-6">
             <h1 className="text-xl font-semibold text-foreground">Vite + React + Tailwind Template</h1>
             <Link
-              to="/products"
+              to="/pricing"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Products
+              Pricing
             </Link>
           </div>
           <div className="flex items-center gap-4">

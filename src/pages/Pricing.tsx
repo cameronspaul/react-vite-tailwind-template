@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { PriceCard } from "../components/PriceCard";
 
 export const ProductList = () => {
   const products = useQuery(api.polar.listAllProductsWithLogging);
@@ -27,12 +28,12 @@ export const ProductList = () => {
   }, [hasSynced, isSyncing, syncProducts]);
   
   if (products === undefined) {
-    return <div>Loading products...</div>;
+    return <div className="text-foreground">Loading products...</div>;
   }
   
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-4">Products</h2>
+      <h2 className="text-2xl font-bold mb-6 text-foreground">Pricing Plans</h2>
       
       {isSyncing ? (
         <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
@@ -47,9 +48,11 @@ export const ProductList = () => {
       ) : null}
       
       {products.length > 0 && (
-        <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
-          {JSON.stringify(products, null, 2)}
-        </pre>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map((product) => (
+            <PriceCard key={product.id} product={product} />
+          ))}
+        </div>
       )}
     </div>
   );

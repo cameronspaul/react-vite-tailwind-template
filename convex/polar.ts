@@ -1,17 +1,9 @@
 import { Polar } from "@convex-dev/polar";
 import { api, components } from "./_generated/api";
-import { QueryCtx, mutation, query } from "./_generated/server";
+import { QueryCtx, mutation, query, action } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
-
-// Import Polar product IDs from environment variables
-// In Convex, environment variables are accessed through the process object
-const POLAR_PREMIUM_WEEKLY_PRODUCT_ID = process.env.POLAR_PREMIUM_WEEKLY_PRODUCT_ID!;
-const POLAR_PREMIUM_MONTHLY_PRODUCT_ID = process.env.POLAR_PREMIUM_MONTHLY_PRODUCT_ID!;
-const POLAR_PREMIUM_QUARTERLY_PRODUCT_ID = process.env.POLAR_PREMIUM_QUARTERLY_PRODUCT_ID!;
-const POLAR_PREMIUM_SEMIANNUAL_PRODUCT_ID = process.env.POLAR_PREMIUM_SEMIANNUAL_PRODUCT_ID!;
-const POLAR_LIFETIME_PRODUCT_ID = process.env.POLAR_LIFETIME_PRODUCT_ID!;
 
 // User query to use in the Polar component
 export const getUserInfo = query({
@@ -61,21 +53,11 @@ const polarGetUserInfo = async (ctx: any) => {
 
 export const polar = new Polar(components.polar, {
   getUserInfo: polarGetUserInfo,
-  products: {
-    premiumWeekly: POLAR_PREMIUM_WEEKLY_PRODUCT_ID,
-    premiumMonthly: POLAR_PREMIUM_MONTHLY_PRODUCT_ID,
-    premiumQuarterly: POLAR_PREMIUM_QUARTERLY_PRODUCT_ID,
-    premiumSemiannual: POLAR_PREMIUM_SEMIANNUAL_PRODUCT_ID,
-    lifetime: POLAR_LIFETIME_PRODUCT_ID,
-  }
+  // Don't configure products by key, rely on sync instead
 });
 
 export const {
-  // If you configure your products by key in the Polar constructor,
-  // this query provides a keyed object of the products.
-  getConfiguredProducts,
-
-  // Lists all non-archived products, useful if you don't configure products by key.
+  // Lists all non-archived products
   listAllProducts,
 
   // Generates a checkout link for the given product IDs.
@@ -130,13 +112,10 @@ const getCurrentUserWithSubscription = async (ctx: QueryCtx) => {
       // Continue without subscription info if there's an error
     }
     
-    const productKey = subscription?.productKey;
-    const isPremium =
-      productKey === "premiumWeekly" ||
-      productKey === "premiumMonthly" ||
-      productKey === "premiumQuarterly" ||
-      productKey === "premiumSemiannual";
-    const isLifetime = productKey === "lifetime";
+    // Since we're not using product keys, determine subscription type based on product properties
+    const product = subscription?.product;
+    const isPremium = product?.isRecurring === true;
+    const isLifetime = product?.isRecurring === false;
     
     return {
       ...user,
@@ -155,5 +134,13 @@ const getCurrentUserWithSubscription = async (ctx: QueryCtx) => {
 export const getCurrentUserWithSubscriptionQuery = query({
   handler: async (ctx) => {
     return getCurrentUserWithSubscription(ctx);
+  },
+});
+
+// Action to sync products from Polar API to Convex database
+export const syncProductsAction = action({
+  args: {},
+  handler: async (ctx) => {
+    await polar.syncProducts(ctx);
   },
 });

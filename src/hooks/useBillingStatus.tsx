@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 type BillingData =
@@ -31,12 +31,30 @@ export function BillingProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const currentUser = useQuery(api.users.getCurrentUser);
   const fetchBillingStatus = useAction(api.polar.getBillingStatus);
   const [billing, setBilling] = useState<BillingData | null>(null);
   const [status, setStatus] = useState<"loading" | "ready">("loading");
 
   useEffect(() => {
     let cancelled = false;
+    // Wait for auth to resolve; useQuery returns undefined while loading.
+    if (currentUser === undefined) {
+      setStatus("loading");
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // If unauthenticated, clear billing immediately.
+    if (currentUser === null) {
+      setBilling(null);
+      setStatus("ready");
+      return () => {
+        cancelled = true;
+      };
+    }
+
     setStatus("loading");
     fetchBillingStatus()
       .then((result) => {
@@ -59,7 +77,7 @@ export function BillingProvider({
     return () => {
       cancelled = true;
     };
-  }, [fetchBillingStatus]);
+  }, [fetchBillingStatus, currentUser]);
 
   const value = useMemo<BillingContextValue>(() => {
     const isPremium = Boolean(billing?.isPremium);

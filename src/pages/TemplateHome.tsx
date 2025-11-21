@@ -2,6 +2,7 @@ import reactLogo from '/react.svg'
 import viteLogo from '/vite.svg'
 import tailwindLogo from '/tailwind.svg'
 import convexLogo from '/convex.svg'
+import polarshLogo from '/polarsh.svg'
 import { Helmet } from 'react-helmet-async'
 import { PremiumGate } from '../components/PremiumGate'
 
@@ -27,6 +28,9 @@ function Home() {
         <a href="https://www.convex.dev/" target="_blank">
           <img src={convexLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Convex logo" />
         </a>
+        <a href="https://polar.sh/" target="_blank">
+          <img src={polarshLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Polarsh logo" />
+        </a>
       </div>
       <div className="grid grid-cols-3 items-center gap-5 -mb-12">
         <div></div>
@@ -44,6 +48,7 @@ function Home() {
             <a href="https://www.npmjs.com/package/react-hot-toast" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Hot Toast</a>
             <div className="text-foreground">Convex Auth</div>
             <div className="text-foreground">Convex Database</div>
+            <div className="text-foreground">Convex Polar Payment Integration</div>
             <div className="text-foreground">Theme Toggle</div>
             <div className="text-foreground">Comprehensive .gitignore</div>
 

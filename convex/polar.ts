@@ -1,6 +1,7 @@
 import { Polar } from "@convex-dev/polar";
 import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState";
 import { ordersList } from "@polar-sh/sdk/funcs/ordersList";
+import { customersList } from "@polar-sh/sdk/funcs/customersList";
 import type { CustomerState } from "@polar-sh/sdk/models/components/customerstate";
 import { api, components } from "./_generated/api";
 import { action, query } from "./_generated/server";
@@ -26,6 +27,49 @@ const fetchAuthenticatedUser = async (
   }
 
   return { userId, user };
+};
+
+const backfillExistingCustomer = async (
+  ctx: any,
+  userId: Id<"users">,
+  email: string | undefined | null
+) => {
+  // If the component already has this user->customer mapping, nothing to do.
+  const existingLink = await ctx.runQuery(
+    components.polar.lib.getCustomerByUserId,
+    { userId: userId.toString() }
+  );
+  if (existingLink) {
+    return existingLink.id;
+  }
+
+  // Some users may already exist in Polar (e.g. created in dashboard or another app)
+  // which causes "email already exists" when we try to create them. Look them up by
+  // email and persist the mapping so checkout session creation can proceed.
+  if (!email) {
+    return null;
+  }
+
+  try {
+    const lookup = await customersList(polar.polar, { email, limit: 1 });
+    if (lookup.ok) {
+      const match = lookup.value.result.items[0];
+      if (match) {
+        await ctx.runMutation(components.polar.lib.upsertCustomer, {
+          id: match.id,
+          userId: userId.toString(),
+          metadata: match.metadata ?? {},
+        });
+        return match.id;
+      }
+    } else {
+      console.error("Failed to look up existing Polar customer", lookup.error);
+    }
+  } catch (error) {
+    console.error("Error during Polar customer lookup", error);
+  }
+
+  return null;
 };
 
 export const getUserInfo = query({
@@ -108,6 +152,10 @@ export const generateCheckoutLink = action({
     if (hasSubscription && !isLifetimeOnly) {
       throw new Error("Invalid checkout selection for your current subscription.");
     }
+
+    // Backfill the customer link by email to avoid "email already exists" errors
+    // when a Polar customer was created outside this Convex app.
+    await backfillExistingCustomer(ctx, userId, user.email);
 
     // Otherwise create checkout via Polar helper (does customer creation, etc).
     const checkout = await polar.createCheckoutSession(ctx, {

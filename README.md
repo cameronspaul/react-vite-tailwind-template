@@ -26,8 +26,8 @@ cd react-vite-tailwind-template
 npm install
 
 # Set up environment variables
-cp .env.local.example .env.local
-# Edit .env.local with your Convex and OAuth credentials
+cp .env .env.local
+# Edit .env.local with your Convex, OAuth, and Polar credentials
 
 # Start Convex backend (in a separate terminal)
 npx convex dev
@@ -145,7 +145,7 @@ The template includes a comprehensive theming system with:
 
 1. **Copy environment template:**
    ```bash
-   cp .env.local.example .env.local
+   cp .env .env.local
    ```
 
 2. **Configure required variables:**
@@ -153,9 +153,13 @@ The template includes a comprehensive theming system with:
    - `VITE_CONVEX_URL` - Local Convex development URL
    - `GOOGLE_CLIENT_ID/SECRET` - Google OAuth credentials
    - `GITHUB_CLIENT_ID/SECRET` - GitHub OAuth credentials
+   - `JWT_PRIVATE_KEY` - Private key for JWT authentication
+   - `JWKS` - JSON Web Key Set for JWT verification
+   - `POLAR_ORGANIZATION_TOKEN` - Polar organization API token
+   - `POLAR_WEBHOOK_SECRET` - Polar webhook secret for payment events
+   - `POLAR_SERVER` - Polar server environment (sandbox/production)
+   - `POLAR_SUCCESS_URL` - URL to redirect after successful payment
    - `VITE_CHECKOUT_LINK_*` - Polar checkout links for pricing tiers
-   - `POLAR_ACCESS_TOKEN` - Polar API access token (optional)
-   - `POLAR_SERVER_ID` - Polar server ID (optional)
 
 ### Development Commands
 

@@ -13,7 +13,7 @@ interface Price {
   type?: string;
 }
 
-interface Product {
+export interface Product {
   createdAt: string;
   description: string | null;
   id: string;
@@ -30,6 +30,7 @@ interface Product {
 
 interface PriceCardProps {
   product: Product;
+  action?: React.ReactNode;
 }
 
 // Utility function to format price from cents to currency
@@ -48,7 +49,7 @@ const getBillingText = (isRecurring: boolean, interval: string | null | undefine
   return `per ${interval}`;
 };
 
-export const PriceCard: React.FC<PriceCardProps> = ({ product }) => {
+export const PriceCard: React.FC<PriceCardProps> = ({ product, action }) => {
   // Get the first price from the prices array
   const price = product.prices[0];
   
@@ -70,6 +71,7 @@ export const PriceCard: React.FC<PriceCardProps> = ({ product }) => {
       <div className="text-sm text-muted-foreground capitalize">
         {billingText}
       </div>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 };

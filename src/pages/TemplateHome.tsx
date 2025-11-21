@@ -16,19 +16,19 @@ function Home() {
       <div className="bg-background text-foreground flex flex-col items-center py-8">
 
       <div className="flex space-x-4 mb-8">
-        <a href="https://vite.dev" target="_blank">
+        <a href="https://vite.dev" target="_blank" rel="noreferrer noopener">
           <img src={viteLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Vite logo" />
         </a>
-        <a href="https://react.dev" target="_blank">
+        <a href="https://react.dev" target="_blank" rel="noreferrer noopener">
           <img src={reactLogo} className="h-16 w-16 animate-spin hover:animate-none" alt="React logo" />
         </a>
-        <a href="https://tailwindcss.com/" target="_blank">
+        <a href="https://tailwindcss.com/" target="_blank" rel="noreferrer noopener">
           <img src={tailwindLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Tailwind logo" />
         </a>
-        <a href="https://www.convex.dev/" target="_blank">
+        <a href="https://www.convex.dev/" target="_blank" rel="noreferrer noopener">
           <img src={convexLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Convex logo" />
         </a>
-        <a href="https://polar.sh/" target="_blank">
+        <a href="https://polar.sh/" target="_blank" rel="noreferrer noopener">
           <img src={polarshLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Polarsh logo" />
         </a>
       </div>
@@ -66,7 +66,7 @@ function Home() {
           fallback={
             <div className="rounded-lg border border-border bg-card p-4 text-center space-y-2">
               <p className="text-sm text-muted-foreground">
-                Premium-only section — sign in and upgrade to unlock.
+                Premium-only section - sign in and upgrade to unlock.
               </p>
             </div>
           }

@@ -1,4 +1,4 @@
-import type { Product } from "./components/PriceCard";
+import type { Product } from "./PriceCard";
 
 export type ProductWithCheckout = Product & { checkoutUrl?: string };
 

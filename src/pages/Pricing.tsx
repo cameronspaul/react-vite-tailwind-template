@@ -1,15 +1,13 @@
 import { useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuthActions } from "@convex-dev/auth/react";
 import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { api } from "../../convex/_generated/api";
 import { PriceCard } from "../components/PriceCard";
-import { staticProducts, type ProductWithCheckout } from "../staticProducts";
+import { staticProducts, type ProductWithCheckout } from "../components/staticProducts";
 import { useBillingStatus } from "../hooks/useBillingStatus";
 
 export const ProductList = () => {
   const location = useLocation();
-  const { signIn } = useAuthActions();
   const billing = useBillingStatus();
   const { refresh: refreshBilling } = billing;
 
@@ -135,7 +133,7 @@ export const ProductList = () => {
 
       {showSuccess && (
         <div className="border border-green-200 bg-green-50 text-green-800 rounded-md p-4">
-          <p className="font-semibold">Congratulations—you are now premium!</p>
+          <p className="font-semibold">Congratulations - you are now premium!</p>
           {checkoutId && (
             <p className="text-sm">Checkout ID: {checkoutId}</p>
           )}

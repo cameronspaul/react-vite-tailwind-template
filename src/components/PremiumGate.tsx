@@ -14,7 +14,7 @@ export function PremiumGate({ children, fallback }: PremiumGateProps) {
   if (status === "loading") {
     return (
       fallback ?? (
-        <div className="text-sm text-muted-foreground">Checking premium…</div>
+        <div className="text-sm text-muted-foreground">Checking premium...</div>
       )
     );
   }

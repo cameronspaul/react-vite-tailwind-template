@@ -63,7 +63,7 @@ html, body {
 .text-primary-foreground { color: var(--color-primary-foreground); }
 .text-destructive { color: var(--color-destructive); }
 
-/* Ring and placeholder helpers matching Tailwind’s class names */
+/* Ring and placeholder helpers matching Tailwind's class names */
 .ring-primary { --tw-ring-color: var(--color-primary); }
 .focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); }
 .placeholder\:text-muted-foreground::placeholder { color: var(--color-muted-foreground); }

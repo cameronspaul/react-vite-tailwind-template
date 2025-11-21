@@ -88,7 +88,9 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center gap-6">
-            <h1 className="text-xl font-semibold text-foreground">Vite + React + Tailwind Template</h1>
+            <Link to="/" className="text-xl font-semibold text-foreground hover:text-muted-foreground transition-colors">
+              Vite + React + Tailwind Template
+            </Link>
             <Link
               to="/pricing"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"

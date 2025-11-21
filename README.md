@@ -6,8 +6,9 @@ A modern, production-ready React template with authentication, real-time data, a
 
 - **🚀 Modern React Stack** - React 19 with TypeScript, Vite, and Tailwind CSS v4
 - **🔐 Authentication Ready** - OAuth integration with GitHub and Google via Convex Auth
+- **💳 Premium Monetization** - Complete subscription system with Polar integration and premium feature gating
 - **📊 Real-time Database** - Convex backend with auto-generated type-safe API
-- **🎨 Beautiful UI** - Dark/light theme with semantic design tokens
+- **🎨 Beautiful UI** - Dark/light theme with semantic design tokens and responsive pricing components
 - **⚡ Fast Development** - Hot module replacement and optimized build pipeline
 - **📱 Responsive Design** - Mobile-first approach with Tailwind utilities
 - **🔧 Developer Experience** - Strict TypeScript, comprehensive tooling, and clear conventions
@@ -43,9 +44,15 @@ Visit `http://localhost:5173` to see your application running!
 ├── src/
 │   ├── components/          # Reusable React components
 │   │   ├── Auth.tsx        # Authentication components
-│   │   └── Header.tsx      # Main header with theme toggle
+│   │   ├── Header.tsx      # Main header with theme toggle
+│   │   ├── PremiumGate.tsx # Premium feature access control
+│   │   ├── PriceCard.tsx   # Pricing display component
+│   │   └── staticProducts.ts # Product catalog configuration
 │   ├── pages/              # Route-level page components
-│   │   └── TemplateHome.tsx # Home page
+│   │   ├── TemplateHome.tsx # Home page
+│   │   └── Pricing.tsx     # Pricing page component
+│   ├── hooks/              # Custom React hooks
+│   │   └── useBillingStatus.tsx # Billing status management
 │   ├── stores/             # State management
 │   │   └── useAppStore.ts  # Zustand store for app state
 │   ├── App.tsx             # Main application component
@@ -55,6 +62,7 @@ Visit `http://localhost:5173` to see your application running!
 │   ├── schema.ts           # Database schema definition
 │   ├── auth.config.ts      # Authentication configuration
 │   ├── auth.ts             # Authentication logic
+│   ├── polar.ts            # Polar payment integration
 │   ├── users.ts            # User-related functions
 │   └── _generated/         # Auto-generated types and API
 ├── public/                 # Static assets
@@ -101,6 +109,8 @@ The application uses a layered provider architecture in [`main.tsx`](src/main.ts
 | | TanStack React Query DevTools | 5.90.2 | Query debugging |
 | **Backend** | Convex | 1.28.2 | Backend-as-a-Service |
 | | @convex-dev/auth | 0.0.90 | Authentication |
+| | @convex-dev/polar | 0.0.21 | Payment processing |
+| | Polar | 1.72.0 | Payment platform |
 | | @auth/core | 0.37.0 | Authentication core |
 | **Development** | @types/node | 24.6.0 | Node.js type definitions |
 | | @types/react | 19.1.16 | React type definitions |
@@ -143,6 +153,9 @@ The template includes a comprehensive theming system with:
    - `VITE_CONVEX_URL` - Local Convex development URL
    - `GOOGLE_CLIENT_ID/SECRET` - Google OAuth credentials
    - `GITHUB_CLIENT_ID/SECRET` - GitHub OAuth credentials
+   - `VITE_CHECKOUT_LINK_*` - Polar checkout links for pricing tiers
+   - `POLAR_ACCESS_TOKEN` - Polar API access token (optional)
+   - `POLAR_SERVER_ID` - Polar server ID (optional)
 
 ### Development Commands
 
@@ -188,10 +201,26 @@ npx convex dev
 </Unauthenticated>
 ```
 
+**Premium Feature Gating:**
+```tsx
+<PremiumGate fallback={<UpgradePrompt />}>
+  <PremiumAnalytics />
+</PremiumGate>
+```
+
+**Pricing Display:**
+```tsx
+<PriceCard
+  product={product}
+  action={<CheckoutButton product={product} />}
+/>
+```
+
 **Data Fetching:**
 ```tsx
 const currentUser = useQuery(api.users.getCurrentUser);
 const { signIn, signOut } = useAuthActions();
+const { isPremium, isLifetime } = useBillingStatus();
 ```
 
 ## 🔐 Authentication
@@ -216,6 +245,25 @@ Users are stored with the following information:
 - Email address
 - Authentication provider
 - Account creation and last login timestamps
+
+### Premium Feature Gating
+
+After authentication, the template provides premium feature gating through the Polar integration:
+
+- **Billing Status Tracking**: Monitor active subscriptions and lifetime purchases
+- **Premium Access Control**: Restrict features based on subscription status
+- **Customer Portal**: Allow users to manage subscriptions and payment methods
+
+The billing system is implemented in [`convex/polar.ts`](convex/polar.ts) and provides:
+- User authentication and customer mapping
+- Subscription management with automatic cancellation for lifetime purchases
+- Billing status tracking through [`useBillingStatus`](src/hooks/useBillingStatus.tsx) hook
+- Customer portal access for subscription management
+
+Products are configured in [`src/components/staticProducts.ts`](src/components/staticProducts.ts) with multiple pricing tiers:
+- Weekly ($9.99/week), Monthly ($29.99/month), Quarterly ($79.99/quarter)
+- Semiannual ($149.99/6 months), Lifetime ($59.00 one-time)
+
 
 ## 📊 Database Schema
 

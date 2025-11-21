@@ -1,4 +1,7 @@
 import { Polar } from "@convex-dev/polar";
+import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState";
+import { ordersList } from "@polar-sh/sdk/funcs/ordersList";
+import type { CustomerState } from "@polar-sh/sdk/models/components/customerstate";
 import { api, components } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -68,15 +71,15 @@ export const syncProducts = action({
   },
 });
 
-export const getBillingStatus = query({
+export const getBillingStatus = action({
   args: {},
-  handler: async (ctx) => {
+  handler: async (ctx): Promise<any> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       return null;
     }
 
-    const user = await ctx.db.get(userId);
+    const user = await ctx.runQuery(api.users.getUserById, { userId });
     if (!user) {
       return null;
     }
@@ -85,9 +88,68 @@ export const getBillingStatus = query({
       userId: userId.toString(),
     });
 
-    const hasActiveEntitlement = Boolean(subscription);
+    const customer = await polar.getCustomerByUserId(ctx, userId.toString());
+
+    // Fetch the authoritative customer state from Polar so we catch
+    // one-time (lifetime) purchases that don't create subscriptions.
+    let customerState: CustomerState | null = null;
+    if (customer) {
+      try {
+        const stateResult = await customersGetState(polar.polar, {
+          id: customer.id,
+        });
+        if (stateResult.ok) {
+          customerState = stateResult.value;
+        } else {
+          console.error("Polar customer state error", stateResult.error);
+        }
+      } catch (error) {
+        console.error("Failed to fetch Polar customer state", error);
+      }
+    }
+
+    const hasBenefitGrant =
+      (customerState?.grantedBenefits?.length ?? 0) > 0;
+    const hasSubscription =
+      Boolean(subscription) ||
+      (customerState?.activeSubscriptions?.length ?? 0) > 0;
+
+    let hasPaidOneTimeOrder = false;
+    if (customer) {
+      try {
+        const [ordersIterator] = await ordersList(polar.polar, {
+          customerId: customer.id,
+          productBillingType: "one_time",
+          limit: 25,
+        }).$inspect();
+
+        for await (const page of ordersIterator) {
+          if (!page.ok) {
+            console.error("Polar orders page error", page.error);
+            continue;
+          }
+          const foundPaidLifetime = page.value.result.items.some(
+            (order) =>
+              order.paid &&
+              order.status !== "pending" &&
+              order.product?.isRecurring === false
+          );
+          if (foundPaidLifetime) {
+            hasPaidOneTimeOrder = true;
+            break;
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch Polar orders", error);
+      }
+    }
+
+    const hasActiveEntitlement =
+      hasSubscription || hasBenefitGrant || hasPaidOneTimeOrder;
     const hasLifetime =
-      subscription?.product?.isRecurring === false;
+      subscription?.product?.isRecurring === false ||
+      (!hasSubscription && hasBenefitGrant) ||
+      hasPaidOneTimeOrder;
 
     return {
       ...user,

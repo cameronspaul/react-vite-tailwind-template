@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Authenticated, Unauthenticated, useAction, useQuery } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
@@ -32,8 +32,6 @@ export const ProductList = () => {
   const activeProducts: Product[] = products ?? [];
   const recurringProducts = activeProducts.filter((product) => product.isRecurring);
   const lifetimeProducts = activeProducts.filter((product) => !product.isRecurring);
-  const recurringProductIds = recurringProducts.map((product) => product.id);
-  const lifetimeProductIds = lifetimeProducts.map((product) => product.id);
 
   const statusLabel =
     billing.status === "loading"
@@ -60,7 +58,7 @@ export const ProductList = () => {
             polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
             className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm hover:bg-muted"
           >
-            Customer portal
+            Polar customer portal
           </CustomerPortalLink>
         )}
       </div>
@@ -99,20 +97,30 @@ export const ProductList = () => {
             {recurringProducts.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {recurringProducts.map((product) => (
-                  <PriceCard key={product.id} product={product} />
+                  <PriceCard
+                    key={product.id}
+                    product={product}
+                    action={
+                      billing.data?.isPremium && billing.data?.subscription ? (
+                        <CustomerPortalLink
+                          polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
+                          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                        >
+                          Update subscription
+                        </CustomerPortalLink>
+                      ) : (
+                        <CheckoutLink
+                          polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
+                          productIds={[product.id]}
+                          embed={false}
+                          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                        >
+                          Start subscription
+                        </CheckoutLink>
+                      )
+                    }
+                  />
                 ))}
-              </div>
-            )}
-            {recurringProductIds.length > 0 && (
-              <div>
-                <CheckoutLink
-                  polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
-                  productIds={recurringProductIds}
-                  embed={false}
-                  className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-                >
-                  {billing.data?.isPremium ? "Update subscription" : "Start subscription"}
-                </CheckoutLink>
               </div>
             )}
           </section>
@@ -127,26 +135,27 @@ export const ProductList = () => {
             {lifetimeProducts.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {lifetimeProducts.map((product) => (
-                  <PriceCard key={product.id} product={product} />
+                  <PriceCard
+                    key={product.id}
+                    product={product}
+                    action={
+                      billing.data?.isLifetime ? (
+                        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
+                          Lifetime premium is active for your account.
+                        </div>
+                      ) : (
+                        <CheckoutLink
+                          polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
+                          productIds={[product.id]}
+                          embed={false}
+                          className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
+                        >
+                          Buy lifetime access
+                        </CheckoutLink>
+                      )
+                    }
+                  />
                 ))}
-              </div>
-            )}
-            {lifetimeProductIds.length > 0 && (
-              <div>
-                {billing.data?.isLifetime ? (
-                  <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
-                    Lifetime premium is active for your account.
-                  </div>
-                ) : (
-                  <CheckoutLink
-                    polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
-                    productIds={lifetimeProductIds}
-                    embed={false}
-                    className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
-                  >
-                    Buy lifetime access
-                  </CheckoutLink>
-                )}
               </div>
             )}
           </section>

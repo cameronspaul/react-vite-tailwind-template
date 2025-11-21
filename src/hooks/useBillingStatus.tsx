@@ -1,5 +1,5 @@
-import { createContext, useContext, useMemo } from "react";
-import { useQuery } from "convex/react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
 type BillingData =
@@ -31,20 +31,47 @@ export function BillingProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const billing = useQuery(api.polar.getBillingStatus);
+  const fetchBillingStatus = useAction(api.polar.getBillingStatus);
+  const [billing, setBilling] = useState<BillingData | null>(null);
+  const [status, setStatus] = useState<"loading" | "ready">("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    setStatus("loading");
+    fetchBillingStatus()
+      .then((result) => {
+        if (!cancelled) {
+          setBilling(result ?? null);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to load billing status", error);
+        if (!cancelled) {
+          setBilling(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setStatus("ready");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchBillingStatus]);
 
   const value = useMemo<BillingContextValue>(() => {
-    const status = billing === undefined ? "loading" : "ready";
     const isPremium = Boolean(billing?.isPremium);
     const isLifetime = Boolean(billing?.isLifetime);
 
     return {
-      data: billing ?? null,
+      data: billing,
       status,
       isPremium,
       isLifetime,
     };
-  }, [billing]);
+  }, [billing, status]);
 
   return (
     <BillingContext.Provider value={value}>

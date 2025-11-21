@@ -1,41 +1,30 @@
-import { useEffect, useState } from "react";
-import { Authenticated, Unauthenticated, useAction, useQuery } from "convex/react";
+import { useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
+import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { api } from "../../convex/_generated/api";
-import { PriceCard, type Product } from "../components/PriceCard";
+import { PriceCard } from "../components/PriceCard";
+import { staticProducts, type ProductWithCheckout } from "../staticProducts";
 import { useBillingStatus } from "../hooks/useBillingStatus";
 
 export const ProductList = () => {
-  const products = useQuery(api.polar.listAllProducts);
-  const syncProducts = useAction(api.polar.syncProducts);
+  const location = useLocation();
   const { signIn } = useAuthActions();
   const billing = useBillingStatus();
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [hasSynced, setHasSynced] = useState(false);
+
   const billingReady = billing.status === "ready";
   const hasLifetime = billingReady && billing.isLifetime;
   const hasSubscription = billingReady && Boolean(billing.data?.subscription);
   const canSubscribe = billingReady && !hasLifetime && !hasSubscription;
-  
-  useEffect(() => {
-    if (hasSynced || isSyncing) return;
-    setHasSynced(true);
-    setIsSyncing(true);
-    syncProducts()
-      .catch((error) => {
-        console.error("Error syncing products:", error);
-      })
-      .finally(() => setIsSyncing(false));
-  }, [hasSynced, isSyncing, syncProducts]);
-  
-  if (products === undefined) {
-    return <div className="text-foreground">Loading products...</div>;
-  }
 
-  const activeProducts: Product[] = products ?? [];
-  const recurringProducts = activeProducts.filter((product) => product.isRecurring);
-  const lifetimeProducts = activeProducts.filter((product) => !product.isRecurring);
+  const { recurringProducts, lifetimeProducts } = useMemo(() => {
+    const active = staticProducts.filter((product) => !product.isArchived);
+    return {
+      recurringProducts: active.filter((product) => product.isRecurring),
+      lifetimeProducts: active.filter((product) => !product.isRecurring),
+    };
+  }, []);
 
   const statusLabel =
     billing.status === "loading"
@@ -44,17 +33,54 @@ export const ProductList = () => {
         ? "Not signed in"
         : billing.data?.isLifetime
           ? "Lifetime premium"
-          : billing.data?.isPremium
-            ? "Recurring subscription"
-            : "Free plan";
-  
+        : billing.data?.isPremium
+          ? "Recurring subscription"
+          : "Free plan";
+
+  const searchParams = new URLSearchParams(location.search);
+  const checkoutId = searchParams.get("checkout_id");
+  const showSuccess =
+    location.pathname.startsWith("/payment/success") || Boolean(checkoutId);
+
+  const renderCheckoutCta = (
+    product: ProductWithCheckout,
+    label: string,
+    variant: "primary" | "ghost" = "primary"
+  ) => {
+    if (!product.checkoutUrl) {
+      return (
+        <div className="text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded-md px-3 py-2 inline-block">
+          Checkout link missing. Set the matching VITE_CHECKOUT_LINK_* env var.
+        </div>
+      );
+    }
+
+    const baseClasses =
+      "inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold";
+    const styles =
+      variant === "primary"
+        ? "bg-primary text-primary-foreground hover:opacity-90"
+        : "border border-border hover:bg-muted";
+
+    return (
+      <a
+        href={product.checkoutUrl}
+        target="_blank"
+        rel="noreferrer"
+        className={`${baseClasses} ${styles}`}
+      >
+        {label}
+      </a>
+    );
+  };
+
   return (
     <div className="space-y-8 text-foreground">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-3xl font-semibold mb-2">Premium access</h2>
           <p className="text-muted-foreground">
-            Products are synced from Polar—no hard-coded IDs.
+            Plans are defined locally; checkout links are provided via env vars.
           </p>
         </div>
         {billing.data?.subscription && (
@@ -67,6 +93,15 @@ export const ProductList = () => {
         )}
       </div>
 
+      {showSuccess && (
+        <div className="border border-green-200 bg-green-50 text-green-800 rounded-md p-4">
+          <p className="font-semibold">Congratulations—you are now premium!</p>
+          {checkoutId && (
+            <p className="text-sm">Checkout ID: {checkoutId}</p>
+          )}
+        </div>
+      )}
+
       <div className="rounded-lg border border-border bg-card p-4">
         <p className="text-sm text-muted-foreground">Current status</p>
         <p className="text-xl font-semibold leading-tight">{statusLabel}</p>
@@ -77,15 +112,9 @@ export const ProductList = () => {
         )}
       </div>
 
-      {isSyncing && (
-        <div className="bg-blue-50 border border-blue-200 text-blue-800 rounded-md p-4">
-          Syncing products from Polar...
-        </div>
-      )}
-
-      {!isSyncing && activeProducts.length === 0 && (
+      {staticProducts.length === 0 && (
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-4">
-          No products found after syncing. Check your Polar configuration.
+          No products configured. Add plans in <code>src/staticProducts.ts</code>.
         </div>
       )}
 
@@ -95,18 +124,18 @@ export const ProductList = () => {
             <div>
               <h3 className="text-2xl font-semibold">Recurring subscription</h3>
               <p className="text-muted-foreground">
-                Pick a recurring plan (monthly/yearly) synced from Polar.
+                Pick a recurring plan (weekly/monthly/quarterly/semiannual). Checkout links come from env.
               </p>
-                      {!billingReady && (
-                        <p className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block mt-2">
-                          Checking your billing status...
-                        </p>
-                      )}
-                      {billingReady && hasLifetime && (
-                        <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
-                          Lifetime access is active. Subscriptions are disabled.
-                        </p>
-                      )}
+              {!billingReady && (
+                <p className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block mt-2">
+                  Checking your billing status...
+                </p>
+              )}
+              {billingReady && hasLifetime && (
+                <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
+                  Lifetime access is active. Subscriptions are disabled.
+                </p>
+              )}
             </div>
             {recurringProducts.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -131,14 +160,7 @@ export const ProductList = () => {
                           Update subscription
                         </CustomerPortalLink>
                       ) : canSubscribe ? (
-                        <CheckoutLink
-                          polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
-                          productIds={[product.id]}
-                          embed={false}
-                          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-                        >
-                          Start subscription
-                        </CheckoutLink>
+                        renderCheckoutCta(product, "Start subscription")
                       ) : (
                         <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
                           Subscriptions unavailable while lifetime is active.
@@ -155,7 +177,7 @@ export const ProductList = () => {
             <div>
               <h3 className="text-2xl font-semibold">Lifetime premium</h3>
               <p className="text-muted-foreground">
-                One-time purchase for lifetime access, verified via Polar entitlements.
+                One-time purchase for lifetime access; entitlements still validated via Polar.
               </p>
             </div>
             {lifetimeProducts.length > 0 && (
@@ -180,14 +202,11 @@ export const ProductList = () => {
                               You already have a subscription; you can still purchase lifetime access.
                             </p>
                           )}
-                          <CheckoutLink
-                            polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
-                            productIds={[product.id]}
-                            embed={false}
-                            className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
-                          >
-                            {hasSubscription ? "Upgrade to lifetime" : "Buy lifetime access"}
-                          </CheckoutLink>
+                          {renderCheckoutCta(
+                            product,
+                            hasSubscription ? "Upgrade to lifetime" : "Buy lifetime access",
+                            "ghost"
+                          )}
                         </div>
                       )
                     }

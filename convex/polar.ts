@@ -7,7 +7,6 @@ import { api, components } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
-import { v } from "convex/values";
 
 const fetchAuthenticatedUser = async (
   ctx: any
@@ -92,9 +91,6 @@ export const polar = new Polar(components.polar, {
 });
 
 export const {
-  // Lists all non-archived products via Polar's synced catalog
-  listAllProducts,
-
   // Generates a customer portal URL for the current user.
   generateCustomerPortalUrl,
 
@@ -104,79 +100,6 @@ export const {
   // Cancels the current subscription.
   cancelCurrentSubscription,
 } = polar.api();
-
-// Generates a checkout link for the given product IDs with lifetime enforcement.
-export const generateCheckoutLink = action({
-  args: {
-    productIds: v.array(v.string()),
-    origin: v.string(),
-    successUrl: v.string(),
-    subscriptionId: v.optional(v.string()),
-  },
-  returns: v.object({ url: v.string() }),
-  handler: async (ctx, args): Promise<{ url: string }> => {
-    const { userId, user } = await fetchAuthenticatedUser(ctx);
-
-    // Reuse the billing status logic to prevent duplicate purchases.
-    const billing = await ctx.runAction(api.polar.getBillingStatus);
-    const hasSubscription = Boolean(billing?.subscription);
-    const hasLifetime = Boolean(billing?.isLifetime);
-
-    // Load products to understand whether the request is for recurring vs lifetime.
-    const products = await ctx.runQuery(api.polar.listAllProducts);
-    const productMap = new Map((products ?? []).map((p) => [p.id, p]));
-    const selected = args.productIds.map((id) => {
-      const product = productMap.get(id);
-      if (!product) {
-        throw new Error("Invalid product selection.");
-      }
-      return product;
-    });
-
-    const containsRecurring = selected.some((p) => p.isRecurring);
-    const isLifetimeOnly = selected.every((p) => p.isRecurring === false);
-
-    // Lifetime owners should not initiate any checkout.
-    if (hasLifetime) {
-      throw new Error("Lifetime access already active - no checkout needed.");
-    }
-
-    // Subscribers cannot start another subscription, but they may purchase lifetime.
-    if (hasSubscription && containsRecurring) {
-      throw new Error(
-        "A subscription is already active - manage changes from the customer portal."
-      );
-    }
-
-    // Mixed carts (recurring + lifetime) are not allowed when a subscription exists.
-    if (hasSubscription && !isLifetimeOnly) {
-      throw new Error("Invalid checkout selection for your current subscription.");
-    }
-
-    // Backfill the customer link by email to avoid "email already exists" errors
-    // when a Polar customer was created outside this Convex app.
-    await backfillExistingCustomer(ctx, userId, user.email);
-
-    // Otherwise create checkout via Polar helper (does customer creation, etc).
-    const checkout = await polar.createCheckoutSession(ctx, {
-      productIds: args.productIds,
-      userId: userId.toString(),
-      email: user.email ?? "",
-      origin: args.origin,
-      successUrl: args.successUrl,
-      subscriptionId: args.subscriptionId,
-    });
-
-    return { url: checkout.url };
-  },
-});
-
-export const syncProducts = action({
-  args: {},
-  handler: async (ctx) => {
-    await polar.syncProducts(ctx);
-  },
-});
 
 export const getBillingStatus = action({
   args: {},

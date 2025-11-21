@@ -51,9 +51,6 @@ export const {
   // Lists all non-archived products via Polar's synced catalog
   listAllProducts,
 
-  // Generates a checkout link for the given product IDs.
-  generateCheckoutLink,
-
   // Generates a customer portal URL for the current user.
   generateCustomerPortalUrl,
 
@@ -63,6 +60,57 @@ export const {
   // Cancels the current subscription.
   cancelCurrentSubscription,
 } = polar.api();
+
+// Generates a checkout link for the given product IDs with lifetime enforcement.
+export const generateCheckoutLink = action({
+  args: {
+    productIds: v.array(v.string()),
+    origin: v.string(),
+    successUrl: v.string(),
+    subscriptionId: v.optional(v.string()),
+  },
+  returns: v.object({ url: v.string() }),
+  handler: async (ctx, args): Promise<{ url: string }> => {
+    const { userId, user } = await fetchAuthenticatedUser(ctx);
+
+    // Reuse the billing status logic to see if lifetime is already active.
+    const billing = await ctx.runAction(api.polar.getBillingStatus);
+    const hasLifetime = Boolean(billing?.isLifetime);
+
+    // If user already has lifetime, block recurring subscriptions.
+    if (hasLifetime && args.subscriptionId) {
+      throw new Error("Lifetime access is active; subscriptions are disabled.");
+    }
+
+    // If the user already has lifetime and any product is recurring, block it.
+    if (hasLifetime) {
+      const products = await ctx.runQuery(api.polar.listAllProducts);
+      const recurringIds = new Set(
+        (products ?? [])
+          .filter((p) => p.isRecurring)
+          .map((p) => p.id)
+      );
+      const containsRecurring = args.productIds.some((id) =>
+        recurringIds.has(id)
+      );
+      if (containsRecurring) {
+        throw new Error("Lifetime access is active; subscriptions are disabled.");
+      }
+    }
+
+    // Otherwise create checkout via Polar helper (does customer creation, etc).
+    const checkout = await polar.createCheckoutSession(ctx, {
+      productIds: args.productIds,
+      userId: userId.toString(),
+      email: user.email ?? "",
+      origin: args.origin,
+      successUrl: args.successUrl,
+      subscriptionId: args.subscriptionId,
+    });
+
+    return { url: checkout.url };
+  },
+});
 
 export const syncProducts = action({
   args: {},

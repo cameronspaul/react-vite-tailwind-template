@@ -13,6 +13,8 @@ export const ProductList = () => {
   const billing = useBillingStatus();
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
+  const hasLifetime = billing.isLifetime;
+  const canSubscribe = !hasLifetime;
   
   useEffect(() => {
     if (hasSynced || isSyncing) return;
@@ -93,6 +95,11 @@ export const ProductList = () => {
               <p className="text-muted-foreground">
                 Pick a recurring plan (monthly/yearly) synced from Polar.
               </p>
+              {hasLifetime && (
+                <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
+                  Lifetime access is active. Subscriptions are disabled.
+                </p>
+              )}
             </div>
             {recurringProducts.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -101,14 +108,18 @@ export const ProductList = () => {
                     key={product.id}
                     product={product}
                     action={
-                      billing.data?.isPremium && billing.data?.subscription ? (
+                      hasLifetime ? (
+                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                          Lifetime is active; no subscription needed.
+                        </div>
+                      ) : billing.data?.isPremium && billing.data?.subscription ? (
                         <CustomerPortalLink
                           polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
                           className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
                         >
                           Update subscription
                         </CustomerPortalLink>
-                      ) : (
+                      ) : canSubscribe ? (
                         <CheckoutLink
                           polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
                           productIds={[product.id]}
@@ -117,6 +128,10 @@ export const ProductList = () => {
                         >
                           Start subscription
                         </CheckoutLink>
+                      ) : (
+                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                          Subscriptions unavailable while lifetime is active.
+                        </div>
                       )
                     }
                   />

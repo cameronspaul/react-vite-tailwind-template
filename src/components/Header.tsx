@@ -6,6 +6,7 @@ import { useAppStore } from "../stores/useAppStore";
 import { Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useBillingStatus } from "../hooks/useBillingStatus";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
@@ -94,13 +95,14 @@ export function Header() {
             >
               Pricing
             </Link>
-          </div>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleThemeToggle}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted px-3 py-2 text-sm transition-colors"
-              aria-label="Toggle theme"
-              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      </div>
+      <div className="flex items-center gap-4">
+        <StatusBadge />
+        <button
+          onClick={handleThemeToggle}
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted px-3 py-2 text-sm transition-colors"
+          aria-label="Toggle theme"
+          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               <span className="font-medium">{theme === 'light' ? 'Dark' : 'Light'}</span>
@@ -115,5 +117,33 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function StatusBadge() {
+  const { status, isPremium, isLifetime } = useBillingStatus();
+
+  const label =
+    status === "loading"
+      ? "Checking..."
+      : isLifetime
+        ? "Lifetime"
+        : isPremium
+          ? "Premium"
+          : "Free";
+
+  const tone =
+    label === "Premium" || label === "Lifetime"
+      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+      : label === "Checking..."
+        ? "bg-blue-100 text-blue-800 border-blue-200"
+        : "bg-gray-100 text-gray-700 border-gray-200";
+
+  return (
+    <span
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${tone}`}
+    >
+      {label}
+    </span>
   );
 }

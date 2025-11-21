@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg'
 import tailwindLogo from '/tailwind.svg'
 import convexLogo from '/convex.svg'
 import { Helmet } from 'react-helmet-async'
+import { PremiumGate } from '../components/PremiumGate'
 
 function Home() {
   return (
@@ -55,6 +56,23 @@ function Home() {
       <p className="mt-1 font-mono text-sm text-center text-muted-foreground">
         Updated on 06/11/2025
       </p>
+      <div className="mt-10 w-full max-w-2xl">
+        <PremiumGate
+          fallback={
+            <div className="rounded-lg border border-border bg-card p-4 text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Premium-only section — sign in and upgrade to unlock.
+              </p>
+            </div>
+          }
+        >
+          <div className="rounded-lg border border-border bg-card p-4 text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              You have premium access. This gate uses the Polar-backed check everywhere.
+            </p>
+          </div>
+        </PremiumGate>
+      </div>
     </div>
     </>
   )

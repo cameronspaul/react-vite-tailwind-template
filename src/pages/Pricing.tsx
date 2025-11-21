@@ -4,12 +4,13 @@ import { useAuthActions } from "@convex-dev/auth/react";
 import { CheckoutLink, CustomerPortalLink } from "@convex-dev/polar/react";
 import { api } from "../../convex/_generated/api";
 import { PriceCard, type Product } from "../components/PriceCard";
+import { useBillingStatus } from "../hooks/useBillingStatus";
 
 export const ProductList = () => {
   const products = useQuery(api.polar.listAllProducts);
-  const billing = useQuery(api.polar.getBillingStatus);
   const syncProducts = useAction(api.polar.syncProducts);
   const { signIn } = useAuthActions();
+  const billing = useBillingStatus();
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
   
@@ -35,13 +36,13 @@ export const ProductList = () => {
   const lifetimeProductIds = lifetimeProducts.map((product) => product.id);
 
   const statusLabel =
-    billing === undefined
+    billing.status === "loading"
       ? "Checking status..."
-      : billing === null
+      : billing.data === null
         ? "Not signed in"
-        : billing.isLifetime
+        : billing.data?.isLifetime
           ? "Lifetime premium"
-          : billing.isPremium
+          : billing.data?.isPremium
             ? "Recurring subscription"
             : "Free plan";
   
@@ -54,7 +55,7 @@ export const ProductList = () => {
             Products are synced from Polar—no hard-coded IDs.
           </p>
         </div>
-        {billing?.subscription && (
+        {billing.data?.subscription && (
           <CustomerPortalLink
             polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
             className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm hover:bg-muted"
@@ -67,9 +68,9 @@ export const ProductList = () => {
       <div className="rounded-lg border border-border bg-card p-4">
         <p className="text-sm text-muted-foreground">Current status</p>
         <p className="text-xl font-semibold leading-tight">{statusLabel}</p>
-        {billing?.subscription?.product?.name && (
+        {billing.data?.subscription?.product?.name && (
           <p className="text-sm text-muted-foreground">
-            {billing.subscription.product.name}
+            {billing.data.subscription.product.name}
           </p>
         )}
       </div>
@@ -110,7 +111,7 @@ export const ProductList = () => {
                   embed={false}
                   className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
                 >
-                  {billing?.isPremium ? "Update subscription" : "Start subscription"}
+                  {billing.data?.isPremium ? "Update subscription" : "Start subscription"}
                 </CheckoutLink>
               </div>
             )}
@@ -132,7 +133,7 @@ export const ProductList = () => {
             )}
             {lifetimeProductIds.length > 0 && (
               <div>
-                {billing?.isLifetime ? (
+                {billing.data?.isLifetime ? (
                   <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
                     Lifetime premium is active for your account.
                   </div>

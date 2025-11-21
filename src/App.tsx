@@ -4,6 +4,7 @@ import Home from './pages/TemplateHome'
 import { useAppStore } from './stores/useAppStore'
 import { Header } from './components/Header'
 import { ProductList } from './pages/Pricing'
+import { BillingProvider } from './hooks/useBillingStatus'
 
 function App() {
   const theme = useAppStore((s) => s.theme)
@@ -17,16 +18,18 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-background">
-        <Header />
-        
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/pricing" element={<ProductList />} />
-          </Routes>
-        </main>
-      </div>
+      <BillingProvider>
+        <div className="min-h-screen bg-background">
+          <Header />
+          
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/pricing" element={<ProductList />} />
+            </Routes>
+          </main>
+        </div>
+      </BillingProvider>
     </BrowserRouter>
   )
 }

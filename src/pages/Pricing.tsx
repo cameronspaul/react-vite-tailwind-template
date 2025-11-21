@@ -13,8 +13,10 @@ export const ProductList = () => {
   const billing = useBillingStatus();
   const [isSyncing, setIsSyncing] = useState(false);
   const [hasSynced, setHasSynced] = useState(false);
-  const hasLifetime = billing.isLifetime;
-  const canSubscribe = !hasLifetime;
+  const billingReady = billing.status === "ready";
+  const hasLifetime = billingReady && billing.isLifetime;
+  const hasSubscription = billingReady && Boolean(billing.data?.subscription);
+  const canSubscribe = billingReady && !hasLifetime && !hasSubscription;
   
   useEffect(() => {
     if (hasSynced || isSyncing) return;
@@ -95,11 +97,16 @@ export const ProductList = () => {
               <p className="text-muted-foreground">
                 Pick a recurring plan (monthly/yearly) synced from Polar.
               </p>
-              {hasLifetime && (
-                <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
-                  Lifetime access is active. Subscriptions are disabled.
-                </p>
-              )}
+                      {!billingReady && (
+                        <p className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block mt-2">
+                          Checking your billing status...
+                        </p>
+                      )}
+                      {billingReady && hasLifetime && (
+                        <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
+                          Lifetime access is active. Subscriptions are disabled.
+                        </p>
+                      )}
             </div>
             {recurringProducts.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -108,7 +115,11 @@ export const ProductList = () => {
                     key={product.id}
                     product={product}
                     action={
-                      hasLifetime ? (
+                      !billingReady ? (
+                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                          Checking your billing status...
+                        </div>
+                      ) : hasLifetime ? (
                         <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
                           Lifetime is active; no subscription needed.
                         </div>
@@ -154,19 +165,30 @@ export const ProductList = () => {
                     key={product.id}
                     product={product}
                     action={
-                      billing.data?.isLifetime ? (
+                      !billingReady ? (
+                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                          Checking your billing status...
+                        </div>
+                      ) : billing.data?.isLifetime ? (
                         <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
                           Lifetime premium is active for your account.
                         </div>
                       ) : (
-                        <CheckoutLink
-                          polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
-                          productIds={[product.id]}
-                          embed={false}
-                          className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
-                        >
-                          Buy lifetime access
-                        </CheckoutLink>
+                        <div className="space-y-2">
+                          {hasSubscription && (
+                            <p className="text-sm text-muted-foreground">
+                              You already have a subscription; you can still purchase lifetime access.
+                            </p>
+                          )}
+                          <CheckoutLink
+                            polarApi={{ generateCheckoutLink: api.polar.generateCheckoutLink }}
+                            productIds={[product.id]}
+                            embed={false}
+                            className="inline-flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-semibold hover:bg-muted"
+                          >
+                            {hasSubscription ? "Upgrade to lifetime" : "Buy lifetime access"}
+                          </CheckoutLink>
+                        </div>
                       )
                     }
                   />

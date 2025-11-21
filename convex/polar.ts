@@ -73,29 +73,40 @@ export const generateCheckoutLink = action({
   handler: async (ctx, args): Promise<{ url: string }> => {
     const { userId, user } = await fetchAuthenticatedUser(ctx);
 
-    // Reuse the billing status logic to see if lifetime is already active.
+    // Reuse the billing status logic to prevent duplicate purchases.
     const billing = await ctx.runAction(api.polar.getBillingStatus);
+    const hasSubscription = Boolean(billing?.subscription);
     const hasLifetime = Boolean(billing?.isLifetime);
 
-    // If user already has lifetime, block recurring subscriptions.
-    if (hasLifetime && args.subscriptionId) {
-      throw new Error("Lifetime access is active; subscriptions are disabled.");
+    // Load products to understand whether the request is for recurring vs lifetime.
+    const products = await ctx.runQuery(api.polar.listAllProducts);
+    const productMap = new Map((products ?? []).map((p) => [p.id, p]));
+    const selected = args.productIds.map((id) => {
+      const product = productMap.get(id);
+      if (!product) {
+        throw new Error("Invalid product selection.");
+      }
+      return product;
+    });
+
+    const containsRecurring = selected.some((p) => p.isRecurring);
+    const isLifetimeOnly = selected.every((p) => p.isRecurring === false);
+
+    // Lifetime owners should not initiate any checkout.
+    if (hasLifetime) {
+      throw new Error("Lifetime access already active - no checkout needed.");
     }
 
-    // If the user already has lifetime and any product is recurring, block it.
-    if (hasLifetime) {
-      const products = await ctx.runQuery(api.polar.listAllProducts);
-      const recurringIds = new Set(
-        (products ?? [])
-          .filter((p) => p.isRecurring)
-          .map((p) => p.id)
+    // Subscribers cannot start another subscription, but they may purchase lifetime.
+    if (hasSubscription && containsRecurring) {
+      throw new Error(
+        "A subscription is already active - manage changes from the customer portal."
       );
-      const containsRecurring = args.productIds.some((id) =>
-        recurringIds.has(id)
-      );
-      if (containsRecurring) {
-        throw new Error("Lifetime access is active; subscriptions are disabled.");
-      }
+    }
+
+    // Mixed carts (recurring + lifetime) are not allowed when a subscription exists.
+    if (hasSubscription && !isLifetimeOnly) {
+      throw new Error("Invalid checkout selection for your current subscription.");
     }
 
     // Otherwise create checkout via Polar helper (does customer creation, etc).
@@ -132,7 +143,7 @@ export const getBillingStatus = action({
       return null;
     }
 
-    const subscription = await polar.getCurrentSubscription(ctx, {
+    let subscription = await polar.getCurrentSubscription(ctx, {
       userId: userId.toString(),
     });
 
@@ -192,11 +203,42 @@ export const getBillingStatus = action({
       }
     }
 
-    const hasActiveEntitlement =
+    let hasActiveEntitlement =
       hasSubscription || hasBenefitGrant || hasPaidOneTimeOrder;
-    const hasLifetime =
+    let hasLifetime =
       subscription?.product?.isRecurring === false ||
       (!hasSubscription && hasBenefitGrant) ||
+      hasPaidOneTimeOrder;
+
+    // If a user owns lifetime access but still has an active recurring subscription,
+    // automatically cancel the subscription to avoid double billing.
+    if (
+      hasLifetime &&
+      subscription &&
+      subscription.product?.isRecurring !== false &&
+      subscription.status === "active"
+    ) {
+      try {
+        await polar.cancelSubscription(ctx, { revokeImmediately: true });
+        subscription = await polar.getCurrentSubscription(ctx, {
+          userId: userId.toString(),
+        });
+      } catch (error) {
+        console.error(
+          "Failed to auto-cancel subscription after lifetime purchase",
+          error
+        );
+      }
+    }
+
+    const normalizedHasSubscription =
+      Boolean(subscription) ||
+      (customerState?.activeSubscriptions?.length ?? 0) > 0;
+    hasActiveEntitlement =
+      normalizedHasSubscription || hasBenefitGrant || hasPaidOneTimeOrder;
+    hasLifetime =
+      subscription?.product?.isRecurring === false ||
+      (!normalizedHasSubscription && hasBenefitGrant) ||
       hasPaidOneTimeOrder;
 
     return {

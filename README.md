@@ -268,6 +268,22 @@ Products are configured in [`src/components/staticProducts.ts`](src/components/s
 - Weekly ($9.99/week), Monthly ($29.99/month), Quarterly ($79.99/quarter)
 - Semiannual ($149.99/6 months), Lifetime ($59.00 one-time)
 
+### Data Storage Philosophy
+
+This template follows a **minimal local storage approach** for payment and customer data:
+
+- **Polar as Single Source of Truth**: All subscription, payment, and customer data is retrieved directly from Polar's API when needed
+- **No Local Duplication**: Purchase history, subscription details, and customer information are not stored in the Convex database
+- **Real-time Validation**: Billing status is always fetched fresh from Polar via the [`getBillingStatus`](convex/polar.ts:104) function
+- **Webhook Integration**: Polar webhooks in [`convex/http.ts`](convex/http.ts:9) handle real-time events without storing data locally
+
+#### Benefits of This Approach
+
+1. **Simplified Architecture**: No data synchronization complexity between Convex and Polar
+2. **Data Consistency**: Eliminates potential conflicts between local and remote data
+3. **Security Compliance**: Sensitive payment data remains with Polar, reducing compliance burden
+4. **Maintenance Simplicity**: Fewer database schemas and migration requirements
+5. **Real-time Accuracy**: Always serves the most current subscription status
 
 ## 📊 Database Schema
 

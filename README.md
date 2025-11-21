@@ -236,6 +236,30 @@ The template includes a complete authentication system with Convex Auth:
 - **GitHub OAuth** - One-click authentication with GitHub accounts
 - **Google OAuth** - Sign in with Google accounts
 
+### Setting Up OAuth Providers
+
+Follow these steps to configure OAuth providers for your application:
+
+#### Google OAuth Setup
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create a new project or select an existing one
+3. Click "Create Credentials" and select "OAuth 2.0 Client IDs"
+4. Configure the following settings:
+   - **Authorized JavaScript origins**: `http://localhost:5173`
+   - **Authorized redirect URIs**: `https://<your-convex-deployment>.convex.site/api/auth/callback/google`
+5. Copy the Client ID and Client Secret to your environment variables
+
+#### GitHub OAuth Setup
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/applications/new)
+2. Click "New OAuth App"
+3. Configure the following settings:
+   - **Homepage URL**: `http://localhost:5173`
+   - **Authorization callback URL**: `https://<your-convex-deployment>.convex.site/api/auth/callback/github`
+4. After creating the app, click "Generate a new client secret"
+5. Copy the Client ID and Client Secret to your environment variables
+
 ### Adding New Providers
 
 1. Update [`convex/auth.config.ts`](convex/auth.config.ts) with provider configuration

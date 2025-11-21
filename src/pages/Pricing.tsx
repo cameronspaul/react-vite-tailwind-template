@@ -1,6 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { api } from "../../convex/_generated/api";
@@ -12,10 +11,13 @@ export const ProductList = () => {
   const location = useLocation();
   const { signIn } = useAuthActions();
   const billing = useBillingStatus();
+  const { refresh: refreshBilling } = billing;
 
   const billingReady = billing.status === "ready";
   const hasLifetime = billingReady && billing.isLifetime;
-  const hasSubscription = billingReady && Boolean(billing.data?.subscription);
+  const hasSubscription =
+    billingReady &&
+    Boolean(billing.data?.hasSubscription ?? billing.data?.subscription);
   const canSubscribe = billingReady && !hasLifetime && !hasSubscription;
 
   const { recurringProducts, lifetimeProducts } = useMemo(() => {
@@ -31,9 +33,9 @@ export const ProductList = () => {
       ? "Checking status..."
       : billing.data === null
         ? "Not signed in"
-        : billing.data?.isLifetime
+        : billing.isLifetime
           ? "Lifetime premium"
-        : billing.data?.isPremium
+        : billing.isPremium
           ? "Recurring subscription"
           : "Free plan";
 
@@ -41,6 +43,34 @@ export const ProductList = () => {
   const checkoutId = searchParams.get("checkout_id");
   const showSuccess =
     location.pathname.startsWith("/payment/success") || Boolean(checkoutId);
+
+  // After returning from checkout, refresh billing so the portal link appears immediately.
+  useEffect(() => {
+    if (!showSuccess) return;
+    void refreshBilling();
+  }, [refreshBilling, showSuccess]);
+
+  const addPrefillParams = (
+    url: string,
+    email?: string | null,
+    name?: string | null
+  ) => {
+    if (!email) {
+      return url;
+    }
+
+    try {
+      const parsed = new URL(url);
+      parsed.searchParams.set("customer_email", email);
+      if (name) {
+        parsed.searchParams.set("customer_name", name);
+      }
+      return parsed.toString();
+    } catch (error) {
+      console.error("Failed to prefill checkout link", error);
+      return url;
+    }
+  };
 
   const renderCheckoutCta = (
     product: ProductWithCheckout,
@@ -62,17 +92,27 @@ export const ProductList = () => {
         ? "bg-primary text-primary-foreground hover:opacity-90"
         : "border border-border hover:bg-muted";
 
+    const checkoutHref = addPrefillParams(
+      product.checkoutUrl,
+      billing.data?.email,
+      billing.data?.name ?? null
+    );
+
     return (
       <a
-        href={product.checkoutUrl}
-        target="_blank"
-        rel="noreferrer"
+        href={checkoutHref}
         className={`${baseClasses} ${styles}`}
       >
         {label}
       </a>
     );
   };
+
+  const renderSignInPrompt = () => (
+    <p className="text-sm text-muted-foreground">
+      Sign in to purchase or manage premium access.
+    </p>
+  );
 
   return (
     <div className="space-y-8 text-foreground">
@@ -83,7 +123,7 @@ export const ProductList = () => {
             Plans are defined locally; checkout links are provided via env vars.
           </p>
         </div>
-        {billing.data?.subscription && (
+        {hasSubscription && (
           <CustomerPortalLink
             polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
             className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm hover:bg-muted"
@@ -105,11 +145,6 @@ export const ProductList = () => {
       <div className="rounded-lg border border-border bg-card p-4">
         <p className="text-sm text-muted-foreground">Current status</p>
         <p className="text-xl font-semibold leading-tight">{statusLabel}</p>
-        {billing.data?.subscription?.product?.name && (
-          <p className="text-sm text-muted-foreground">
-            {billing.data.subscription.product.name}
-          </p>
-        )}
       </div>
 
       {staticProducts.length === 0 && (
@@ -118,127 +153,107 @@ export const ProductList = () => {
         </div>
       )}
 
-      <Authenticated>
-        <div className="space-y-10">
-          <section className="space-y-4">
-            <div>
-              <h3 className="text-2xl font-semibold">Recurring subscription</h3>
-              <p className="text-muted-foreground">
-                Pick a recurring plan (weekly/monthly/quarterly/semiannual). Checkout links come from env.
+      <div className="space-y-10">
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-2xl font-semibold">Recurring subscription</h3>
+            <p className="text-muted-foreground">
+              Pick a recurring plan (weekly/monthly/quarterly/semiannual). Checkout links come from env.
+            </p>
+            {!billingReady && (
+              <p className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block mt-2">
+                Checking your billing status...
               </p>
-              {!billingReady && (
-                <p className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block mt-2">
-                  Checking your billing status...
-                </p>
-              )}
-              {billingReady && hasLifetime && (
-                <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
-                  Lifetime access is active. Subscriptions are disabled.
-                </p>
-              )}
-            </div>
-            {recurringProducts.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {recurringProducts.map((product) => (
-                  <PriceCard
-                    key={product.id}
-                    product={product}
-                    action={
-                      !billingReady ? (
-                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
-                          Checking your billing status...
-                        </div>
-                      ) : hasLifetime ? (
-                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
-                          Lifetime is active; no subscription needed.
-                        </div>
-                      ) : billing.data?.isPremium && billing.data?.subscription ? (
-                        <CustomerPortalLink
-                          polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
-                          className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
-                        >
-                          Update subscription
-                        </CustomerPortalLink>
-                      ) : canSubscribe ? (
-                        renderCheckoutCta(product, "Start subscription")
-                      ) : (
-                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
-                          Subscriptions unavailable while lifetime is active.
-                        </div>
-                      )
-                    }
-                  />
-                ))}
-              </div>
             )}
-          </section>
-
-          <section className="space-y-4">
-            <div>
-              <h3 className="text-2xl font-semibold">Lifetime premium</h3>
-              <p className="text-muted-foreground">
-                One-time purchase for lifetime access; entitlements still validated via Polar.
+            {billingReady && hasLifetime && (
+              <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
+                Lifetime access is active. Subscriptions are disabled.
               </p>
-            </div>
-            {lifetimeProducts.length > 0 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {lifetimeProducts.map((product) => (
-                  <PriceCard
-                    key={product.id}
-                    product={product}
-                    action={
-                      !billingReady ? (
-                        <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
-                          Checking your billing status...
-                        </div>
-                      ) : billing.data?.isLifetime ? (
-                        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
-                          Lifetime premium is active for your account.
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          {hasSubscription && (
-                            <p className="text-sm text-muted-foreground">
-                              You already have a subscription; you can still purchase lifetime access.
-                            </p>
-                          )}
-                          {renderCheckoutCta(
-                            product,
-                            hasSubscription ? "Upgrade to lifetime" : "Buy lifetime access",
-                            "ghost"
-                          )}
-                        </div>
-                      )
-                    }
-                  />
-                ))}
-              </div>
             )}
-          </section>
-        </div>
-      </Authenticated>
-
-      <Unauthenticated>
-        <div className="rounded-lg border border-border bg-card p-6 space-y-3">
-          <p className="text-sm text-muted-foreground">
-            Sign in to buy or manage premium access.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => void signIn("github")}
-              className="px-4 py-2 rounded-md bg-gray-900 text-white text-sm hover:bg-gray-800"
-            >
-              Sign in with GitHub
-            </button>
-            <button
-              onClick={() => void signIn("google")}
-              className="px-4 py-2 rounded-md border border-border text-sm hover:bg-muted"
-            >
-              Sign in with Google
-            </button>
           </div>
-        </div>
-      </Unauthenticated>
+          {recurringProducts.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recurringProducts.map((product) => (
+                <PriceCard
+                  key={product.id}
+                  product={product}
+                  action={
+                    !billingReady ? (
+                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                        Checking your billing status...
+                      </div>
+                    ) : !billing.data ? (
+                      renderSignInPrompt()
+                    ) : hasLifetime ? (
+                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                        Lifetime is active; no subscription needed.
+                      </div>
+                    ) : billing.data?.isPremium && hasSubscription ? (
+                      <CustomerPortalLink
+                        polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
+                        className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
+                      >
+                        Update subscription
+                      </CustomerPortalLink>
+                    ) : canSubscribe ? (
+                      renderCheckoutCta(product, "Start subscription")
+                    ) : (
+                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                        Subscriptions unavailable while lifetime is active.
+                      </div>
+                    )
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4">
+          <div>
+            <h3 className="text-2xl font-semibold">Lifetime premium</h3>
+            <p className="text-muted-foreground">
+              One-time purchase for lifetime access; entitlements still validated via Polar.
+            </p>
+          </div>
+          {lifetimeProducts.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {lifetimeProducts.map((product) => (
+                <PriceCard
+                  key={product.id}
+                  product={product}
+                  action={
+                    !billingReady ? (
+                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                        Checking your billing status...
+                      </div>
+                    ) : !billing.data ? (
+                      renderSignInPrompt()
+                    ) : billing.data?.isLifetime ? (
+                      <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
+                        Lifetime premium is active for your account.
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {hasSubscription && (
+                          <p className="text-sm text-muted-foreground">
+                            You already have a subscription; you can still purchase lifetime access.
+                          </p>
+                        )}
+                        {renderCheckoutCta(
+                          product,
+                          hasSubscription ? "Upgrade to lifetime" : "Buy lifetime access",
+                          "ghost"
+                        )}
+                      </div>
+                    )
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 };

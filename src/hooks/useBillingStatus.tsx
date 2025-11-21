@@ -1,4 +1,11 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -12,6 +19,9 @@ type BillingData =
       } | null;
       isPremium: boolean;
       isLifetime: boolean;
+      hasSubscription?: boolean;
+      email?: string | null;
+      name?: string | null;
     }
   | null;
 
@@ -20,6 +30,7 @@ type BillingContextValue = {
   status: "loading" | "ready";
   isPremium: boolean;
   isLifetime: boolean;
+  refresh: () => Promise<void>;
 };
 
 const BillingContext = createContext<BillingContextValue | undefined>(
@@ -36,48 +47,50 @@ export function BillingProvider({
   const [billing, setBilling] = useState<BillingData | null>(null);
   const [status, setStatus] = useState<"loading" | "ready">("loading");
 
-  useEffect(() => {
-    let cancelled = false;
-    // Wait for auth to resolve; useQuery returns undefined while loading.
+  const refresh = useCallback(async () => {
+    // Avoid mutating state while auth is still resolving.
     if (currentUser === undefined) {
-      setStatus("loading");
-      return () => {
-        cancelled = true;
-      };
+      return;
     }
 
-    // If unauthenticated, clear billing immediately.
+    // Clear immediately if unauthenticated.
     if (currentUser === null) {
       setBilling(null);
       setStatus("ready");
-      return () => {
-        cancelled = true;
-      };
+      return;
     }
 
     setStatus("loading");
-    fetchBillingStatus()
-      .then((result) => {
-        if (!cancelled) {
-          setBilling(result ?? null);
-        }
-      })
-      .catch((error) => {
-        console.error("Failed to load billing status", error);
-        if (!cancelled) {
-          setBilling(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setStatus("ready");
-        }
-      });
 
+    try {
+      const result = await fetchBillingStatus();
+      setBilling(result ?? null);
+    } catch (error) {
+      console.error("Failed to load billing status", error);
+      setBilling(null);
+    } finally {
+      setStatus("ready");
+    }
+  }, [currentUser, fetchBillingStatus]);
+
+  useEffect(() => {
+    // Wait for auth to resolve; useQuery returns undefined while loading.
+    if (currentUser === undefined) {
+      setStatus("loading");
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
+      if (cancelled) return;
+      await refresh();
+    };
+
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [fetchBillingStatus, currentUser]);
+  }, [currentUser, refresh]);
 
   const value = useMemo<BillingContextValue>(() => {
     const isPremium = Boolean(billing?.isPremium);
@@ -88,8 +101,9 @@ export function BillingProvider({
       status,
       isPremium,
       isLifetime,
+      refresh,
     };
-  }, [billing, status]);
+  }, [billing, refresh, status]);
 
   return (
     <BillingContext.Provider value={value}>

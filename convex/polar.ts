@@ -118,7 +118,19 @@ export const getBillingStatus = action({
       userId: userId.toString(),
     });
 
-    const customer = await polar.getCustomerByUserId(ctx, userId.toString());
+    let customer = await polar.getCustomerByUserId(ctx, userId.toString());
+
+    // If the user bought via a standalone checkout link, backfill the mapping by email.
+    if (!customer) {
+      const backfilledId = await backfillExistingCustomer(ctx, userId, user.email);
+      if (backfilledId) {
+        customer = {
+          id: backfilledId,
+          userId: userId.toString(),
+          metadata: {},
+        };
+      }
+    }
 
     // Fetch the authoritative customer state from Polar so we catch
     // one-time (lifetime) purchases that don't create subscriptions.
@@ -217,6 +229,7 @@ export const getBillingStatus = action({
       subscription,
       isPremium: hasActiveEntitlement,
       isLifetime: hasLifetime,
+      hasSubscription: normalizedHasSubscription,
     };
   },
 });

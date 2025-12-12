@@ -1,6 +1,7 @@
 import { convexAuth } from "@convex-dev/auth/server";
 import GitHub from "@auth/core/providers/github";
 import Google from "@auth/core/providers/google";
+import { internal } from "./_generated/api";
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   providers: [
@@ -36,12 +37,23 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
     }),
   ],
   callbacks: {
-    async afterUserCreatedOrUpdated(ctx, { userId }) {
-      // Set the creation date when a new user is created
+    async afterUserCreatedOrUpdated(ctx, { userId, existingUserId }) {
       const user = await ctx.db.get(userId);
+
+      // Set the creation date when a new user is created
       if (user && !user.creationDate) {
         await ctx.db.patch(userId, {
           creationDate: Date.now(),
+        });
+      }
+
+      // Send welcome email only for new users (not updates)
+      const isNewUser = !existingUserId;
+      if (isNewUser && user?.email) {
+        // Schedule the welcome email asynchronously (non-blocking)
+        await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
+          email: user.email,
+          name: user.name,
         });
       }
     },

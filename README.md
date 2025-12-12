@@ -91,6 +91,23 @@ Configure the following environment variables in your `.env` file:
 - `POLAR_SUCCESS_URL` - Success URL after payment
 - `VITE_CHECKOUT_LINK_*` - Checkout links for different subscription tiers
 
+### Email (Resend)
+- `RESEND_API_KEY` - Your Resend API key
+- `RESEND_FROM_EMAIL` - Verified sender email (e.g., `Your App <noreply@yourdomain.com>`)
+
+#### Setting Up Resend
+
+1. Create an account at [resend.com](https://resend.com)
+2. Get your API key from [resend.com/api-keys](https://resend.com/api-keys)
+3. **Important**: Add and verify your domain at [resend.com/domains](https://resend.com/domains) to avoid emails going to spam
+4. Set the environment variables in Convex:
+   ```bash
+   npx convex env set RESEND_API_KEY re_your_api_key_here
+   npx convex env set RESEND_FROM_EMAIL "Your App <noreply@yourdomain.com>"
+   ```
+
+> ⚠️ **Note**: Without a verified domain, emails will be sent from `onboarding@resend.dev` and may go to spam folders.
+
 ## Running the Application
 
 ### Development

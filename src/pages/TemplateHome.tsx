@@ -5,89 +5,209 @@ import convexLogo from '/convex.svg'
 import polarshLogo from '/polarsh.svg'
 import shadcnLogo from '/shadcn-ui.svg'
 import { PremiumGate } from '../components/PremiumGate'
-import { Card, CardContent } from '../components/ui/card'
-import { Separator } from '../components/ui/separator'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Badge } from '../components/ui/badge'
+import {
+  ArrowRight,
+  Code2,
+  Database,
+  Layout,
+  Lock,
+  Zap,
+  CreditCard
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 function Home() {
   return (
-    <>
-      <div className="bg-background text-foreground flex flex-col items-center py-8">
-
-        <div className="flex space-x-4 mb-8">
-          <a href="https://vite.dev" target="_blank" rel="noreferrer noopener">
-            <img src={viteLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Vite logo" />
-          </a>
-          <a href="https://react.dev" target="_blank" rel="noreferrer noopener">
-            <img src={reactLogo} className="h-16 w-16 animate-spin hover:animate-none" alt="React logo" />
-          </a>
-          <a href="https://tailwindcss.com/" target="_blank" rel="noreferrer noopener">
-            <img src={tailwindLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Tailwind logo" />
-          </a>
-          <a href="https://www.convex.dev/" target="_blank" rel="noreferrer noopener">
-            <img src={convexLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Convex logo" />
-          </a>
-          <a href="https://polar.sh/" target="_blank" rel="noreferrer noopener">
-            <img src={polarshLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Polarsh logo" />
-          </a>
-          <a href="https://ui.shadcn.com/" target="_blank" rel="noreferrer noopener">
-            <img src={shadcnLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Shadcn logo" />
-          </a>
-        </div>
-        <div className="grid grid-cols-3 items-center gap-5">
-          <div></div>
-          <div className="flex flex-col items-center">
-            <h1 className="text-5xl font-bold mb-8">Vite + React + Tailwind <span className="opacity-80">+</span></h1>
-          </div>
-          <div className="flex flex-col items-start">
-            <div className="text-lg font-medium opacity-80 space-y-1">
-              <a href="https://www.npmjs.com/package/react-router-dom" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Router DOM</a>
-              <a href="https://www.npmjs.com/package/zustand" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Zustand</a>
-              <a href="https://www.npmjs.com/package/@tanstack/react-query" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">TanStack Query</a>
-              <a href="https://www.npmjs.com/package/react-hook-form" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Hook Form</a>
-              <a href="https://sonner.emilkowal.ski/" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Sonner</a>
-              <a href="https://www.npmjs.com/package/lucide-react" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Lucide React</a>
-              <a href="https://www.npmjs.com/package/shadcn-ui" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Shadcn UI</a>
-              <div className="text-foreground">Convex Auth</div>
-              <div className="text-foreground">Convex Database</div>
-              <div className="text-foreground">Convex Polar Payment Integration</div>
-              <div className="text-foreground">Theme Toggle</div>
-              <div className="text-foreground">Comprehensive .gitignore</div>
-
-            </div>
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="relative py-10 overflow-hidden">
+        <div className="container px-4 md:px-6 mx-auto flex flex-col items-center text-center">
+          <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium rounded-full">
+            v1.0.0 Now Available
+          </Badge>
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
+            Build faster with the <br className="hidden md:block" />
+            ultimate React stack
+          </h1>
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-10 leading-relaxed">
+            A production-ready template featuring Vite, React, Tailwind, Shadcn UI, Convex, and Polar integration.
+            Stop setting up, start building.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <Button size="lg" className="h-12 px-8 text-base shadow-lg hover:shadow-xl transition-all" asChild>
+              <a href="https://github.com/cameronspaul/react-vite-tailwind-template" target="_blank" rel="noopener noreferrer">
+                Get Started <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
+            </Button>
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+              <Link to="/pricing">View Pricing</Link>
+            </Button>
           </div>
         </div>
+      </section>
 
-        <Separator className="my-8" />
+      {/* Tech Stack Strip */}
+      <section className="py-12 bg-muted/30 border-y border-border/50">
+        <div className="container px-4 mx-auto">
+          <p className="text-center text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-8">
+            Powered by modern technologies
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
+            <a href="https://vite.dev" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity">
+              <img src={viteLogo} className="h-8 md:h-10 w-auto" alt="Vite" />
+            </a>
+            <a href="https://react.dev" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity">
+              <img src={reactLogo} className="h-8 md:h-10 w-auto animate-spin-slow" alt="React" />
+            </a>
+            <a href="https://tailwindcss.com/" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity">
+              <img src={tailwindLogo} className="h-8 md:h-10 w-auto" alt="Tailwind" />
+            </a>
+            <a href="https://www.convex.dev/" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity">
+              <img src={convexLogo} className="h-8 md:h-10 w-auto" alt="Convex" />
+            </a>
+            <a href="https://polar.sh/" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity">
+              <img src={polarshLogo} className="h-8 md:h-10 w-auto" alt="Polar" />
+            </a>
+            <a href="https://ui.shadcn.com/" target="_blank" rel="noreferrer" className="hover:opacity-100 transition-opacity">
+              <img src={shadcnLogo} className="h-8 md:h-10 w-auto" alt="Shadcn UI" />
+            </a>
+          </div>
+        </div>
+      </section>
 
-        <p className="text-center text-muted-foreground">
-          Click on the logos to learn more
-        </p>
-        <p className="mt-1 font-mono text-sm text-center text-muted-foreground">
-          Updated on 12/12/2025
-        </p>
-        <div className="mt-10 w-full max-w-2xl">
-          <PremiumGate
-            fallback={
-              <Card>
-                <CardContent className="text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Premium-only section - sign in and upgrade to unlock.
+      {/* Features Grid */}
+      <section className="py-24 container px-4 mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl font-bold tracking-tight mb-4">Everything you need</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            We've pre-configured the best tools so you can focus on building your product's unique value.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="bg-card/50 hover:bg-card transition-colors border-muted">
+            <CardHeader>
+              <Zap className="h-8 w-8 text-primary mb-4" />
+              <CardTitle>Lightning Fast</CardTitle>
+              <CardDescription>
+                Built on Vite for instant server starts and lightning-fast HMR.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="bg-card/50 hover:bg-card transition-colors border-muted">
+            <CardHeader>
+              <Layout className="h-8 w-8 text-primary mb-4" />
+              <CardTitle>Beautiful UI</CardTitle>
+              <CardDescription>
+                Shadcn UI components styled with Tailwind CSS for premium aesthetics.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="bg-card/50 hover:bg-card transition-colors border-muted">
+            <CardHeader>
+              <Database className="h-8 w-8 text-primary mb-4" />
+              <CardTitle>Real-time Backend</CardTitle>
+              <CardDescription>
+                Convex provides a type-safe, reactive backend as a service.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="bg-card/50 hover:bg-card transition-colors border-muted">
+            <CardHeader>
+              <CreditCard className="h-8 w-8 text-primary mb-4" />
+              <CardTitle>Monetization Ready</CardTitle>
+              <CardDescription>
+                Seamless integration with Polar.sh for subscriptions and one-time sales.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="bg-card/50 hover:bg-card transition-colors border-muted">
+            <CardHeader>
+              <Lock className="h-8 w-8 text-primary mb-4" />
+              <CardTitle>Authentication</CardTitle>
+              <CardDescription>
+                Secure authentication handled by Convex Auth with easy provider setup.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+          <Card className="bg-card/50 hover:bg-card transition-colors border-muted">
+            <CardHeader>
+              <Code2 className="h-8 w-8 text-primary mb-4" />
+              <CardTitle>Type Safe</CardTitle>
+              <CardDescription>
+                Full TypeScript support end-to-end for a robust development experience.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </section>
+
+      {/* Premium Gate Demo */}
+      <section className="py-24 bg-muted/20">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight mb-4">Premium Features</h2>
+            <p className="text-muted-foreground">
+              This template includes a built-in premium gating component. Try it out below.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 blur-3xl -z-10" />
+            <PremiumGate
+              fallback={
+                <Card className="border-dashed border-2">
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+                    <Lock className="h-12 w-12 text-muted-foreground/50" />
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-xl">Premium Content Locked</h3>
+                      <p className="text-muted-foreground max-w-sm mx-auto">
+                        This content is only visible to active subscribers or lifetime members.
+                      </p>
+                    </div>
+                    <Button variant="default" asChild>
+                      <Link to="/pricing">Unlock Access</Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              }
+            >
+              <Card className="border-primary/50 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="h-5 w-5 text-primary" />
+                    Premium Content Unlocked
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    Congratulations! You have verified premium access to this application.
+                    This component automatically checks your Polar entitlement status.
                   </p>
+                  <div className="p-4 bg-primary/10 rounded-lg text-sm text-primary font-medium">
+                    This is where your exclusive premium features would go.
+                  </div>
                 </CardContent>
               </Card>
-            }
-          >
-            <Card>
-              <CardContent className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  You have premium access. This gate uses the Polar-backed check everywhere.
-                </p>
-              </CardContent>
-            </Card>
-          </PremiumGate>
+            </PremiumGate>
+          </div>
         </div>
-      </div>
-    </>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-border mt-auto">
+        <div className="container px-4 mx-auto text-center">
+          <p className="text-sm text-muted-foreground">
+            Built with <span className="text-red-500">♥</span> using React, Vite, and Tailwind.
+          </p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Updated on 12/12/2025
+          </p>
+        </div>
+      </footer>
+    </div>
   )
 }
 

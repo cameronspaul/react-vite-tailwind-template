@@ -1,5 +1,5 @@
 import React from 'react';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface ContentPageLayoutProps {
     title: string;
@@ -11,17 +11,33 @@ interface ContentPageLayoutProps {
 
 const ContentPageLayout: React.FC<ContentPageLayoutProps> = ({ title, subtitle, description, children }) => {
     return (
-        <div className="container mx-auto max-w-4xl py-12 px-4 sm:px-6 lg:px-8">
-            <div className="space-y-4 text-center mb-12">
-                <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
-                    {title}
-                </h1>
-                {subtitle && <p className="text-xl text-muted-foreground font-medium">{subtitle}</p>}
-                {description && <p className="mt-4 text-muted-foreground/80 max-w-2xl mx-auto">{description}</p>}
-            </div>
-            <Separator className="my-8 opacity-50" />
-            <div className="space-y-6 text-foreground/90 leading-relaxed">
-                {children}
+        <div className="min-h-screen">
+            <div className="container mx-auto max-w-5xl py-12 px-4 sm:px-6 lg:px-8">
+                {/* Header Section */}
+                <div className="space-y-6 text-center mb-12">
+                    <div className="space-y-3">
+                        <h1 className="text-5xl font-extrabold tracking-tight lg:text-6xl">
+                            {title}
+                        </h1>
+                        {subtitle && (
+                            <p className="text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
+                                {subtitle}
+                            </p>
+                        )}
+                    </div>
+                    {description && (
+                        <p className="text-base text-muted-foreground/90 max-w-2xl mx-auto leading-relaxed">
+                            {description}
+                        </p>
+                    )}
+                </div>
+
+                {/* Content Card */}
+                <Card className="border-border/50 shadow-2xl bg-card/50 backdrop-blur-sm">
+                    <CardContent className="p-8 space-y-8">
+                        {children}
+                    </CardContent>
+                </Card>
             </div>
         </div>
     );

@@ -43,7 +43,12 @@ export function Footer() {
 
                 </div>
                 <div className="mt-8 pt-8 border-t border-border/40 text-center text-sm text-muted-foreground">
-                    <p>&copy; {new Date().getFullYear()} Your Company. All rights reserved.</p>
+                    <p>
+                        Built with <span className="text-secondary-foreground hover:text-destructive transition-colors">♥</span> using React, Vite, and Tailwind.
+                    </p>
+                    <p className="text-xs mt-1">
+                        Updated on 12/12/2025
+                    </p>
                 </div>
             </div>
         </footer>

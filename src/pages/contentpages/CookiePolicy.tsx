@@ -1,5 +1,6 @@
 import React from 'react';
 import ContentPageLayout from './ContentPageLayout';
+import { ContentSection } from './ContentComponents';
 
 const CookiePolicy: React.FC = () => {
     return (
@@ -9,42 +10,47 @@ const CookiePolicy: React.FC = () => {
             description="Learn about our cookie usage, including essential cookies for authentication, security, and preferences, plus analytics cookies."
             keywords="cookies, cookie policy, browser cookies, privacy preferences, essential cookies, analytics cookies, tracking, data privacy"
         >
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-4">1. What Are Cookies?</h2>
-                <p className="text-muted-foreground">
+            <ContentSection title="What Are Cookies?">
+                <p className="text-muted-foreground leading-relaxed">
                     Cookies are small text files stored on your device. We use them to make the app work efficiently.
                 </p>
-            </section>
+            </ContentSection>
 
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-4">2. Essential Cookies</h2>
-                <p className="mb-2 text-muted-foreground">We use these cookies to:</p>
-                <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                    <li><strong>Keep you logged in:</strong> Remembering your session information.</li>
-                    <li><strong>Security:</strong> Preventing attacks and ensuring safe browsing.</li>
+            <ContentSection title="Essential Cookies">
+                <p className="mb-4 text-muted-foreground">We use these cookies to:</p>
+                <ul className="list-disc pl-6 space-y-3 text-muted-foreground">
+                    <li>
+                        <strong className="text-foreground">Keep you logged in:</strong> Remembering your session information.
+                    </li>
+                    <li>
+                        <strong className="text-foreground">Security:</strong> Preventing attacks and ensuring safe browsing.
+                    </li>
                 </ul>
-            </section>
+            </ContentSection>
 
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-4">3. Analytics Cookies</h2>
-                <p className="text-muted-foreground">
+            <ContentSection title="Analytics Cookies">
+                <p className="text-muted-foreground leading-relaxed">
                     We may use anonymous analytics to see which features are used most. This helps us improve the user experience.
                 </p>
-            </section>
+            </ContentSection>
 
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-4">4. Managing Cookies</h2>
-                <p className="text-muted-foreground">
+            <ContentSection title="Managing Cookies">
+                <p className="text-muted-foreground leading-relaxed">
                     You can control cookies through your browser settings. However, disabling essential cookies will break the login functionality.
                 </p>
-            </section>
+            </ContentSection>
 
-            <section className="border-t border-white/10 pt-8 mt-8">
-                <h2 className="text-2xl font-bold text-foreground mb-4">5. Contact</h2>
-                <p className="text-muted-foreground">
-                    Questions? Email <a href="mailto:privacy@example.com" className="text-primary hover:underline">privacy@example.com</a>.
-                </p>
-            </section>
+            <div className="pt-8 mt-8 border-t border-border/30">
+                <ContentSection title="Contact" variant="compact">
+                    <p className="text-muted-foreground">
+                        Questions? Email{' '}
+                        <a href="mailto:privacy@example.com" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+                            privacy@example.com
+                        </a>
+                        .
+                    </p>
+                </ContentSection>
+            </div>
         </ContentPageLayout>
     );
 };

@@ -196,17 +196,7 @@ function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 border-t border-border mt-auto">
-        <div className="container px-4 mx-auto text-center">
-          <p className="text-sm text-muted-foreground">
-            Built with <span className="text-secondary-foreground hover:text-destructive transition-colors">♥</span> using React, Vite, and Tailwind.
-          </p>
-          <p className="text-xs text-muted-foreground mt-2">
-            Updated on 12/12/2025
-          </p>
-        </div>
-      </footer>
+
     </div>
   )
 }

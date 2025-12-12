@@ -1,5 +1,6 @@
 import React from 'react';
 import ContentPageLayout from './ContentPageLayout';
+import { ContentSection, Subsection } from './ContentComponents';
 
 const HelpSupport: React.FC = () => {
     return (
@@ -9,74 +10,57 @@ const HelpSupport: React.FC = () => {
             description="Browse help topics including getting started, discovery, subscriptions, and safety features."
             keywords="help, support, questions, guide, troubleshooting"
         >
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Getting Started</h2>
+            <ContentSection title="Getting Started">
+                <div className="grid gap-6 md:grid-cols-1">
+                    <Subsection title="Creating an Account">
+                        Sign up with your preferred social provider to get started and create your profile.
+                    </Subsection>
 
-                <div className="space-y-6">
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Creating an Account</h3>
-                        <p className="text-muted-foreground">Sign up with your preferred social provider to get started and create your profile.</p>
-                    </div>
-
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Profile Setup</h3>
-                        <p className="text-muted-foreground">Add your details, skills, and projects to complete your profile. A complete profile helps you find better matches.</p>
-                    </div>
+                    <Subsection title="Profile Setup">
+                        Add your details, skills, and projects to complete your profile. A complete profile helps you find better matches.
+                    </Subsection>
                 </div>
-            </section>
+            </ContentSection>
 
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Discovery & Matching</h2>
+            <ContentSection title="Discovery & Matching">
+                <div className="grid gap-6 md:grid-cols-1">
+                    <Subsection title="Browsing">
+                        View other members in the feed. Interact with those who share your interests.
+                    </Subsection>
 
-                <div className="space-y-6">
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Browsing</h3>
-                        <p className="text-muted-foreground">View other members in the feed. Interact with those who share your interests.</p>
-                    </div>
-
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Connects</h3>
-                        <p className="text-muted-foreground">Send requests to chat. Manage your connections in the messages tab.</p>
-                    </div>
+                    <Subsection title="Connects">
+                        Send requests to chat. Manage your connections in the messages tab.
+                    </Subsection>
                 </div>
-            </section>
+            </ContentSection>
 
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Subscriptions & Billing</h2>
+            <ContentSection title="Subscriptions & Billing">
+                <div className="grid gap-6 md:grid-cols-1">
+                    <Subsection title="Premium Plans">
+                        Upgrade for enhanced features. Check the pricing page for details on available plans.
+                    </Subsection>
 
-                <div className="space-y-6">
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Premium Plans</h3>
-                        <p className="text-muted-foreground">Upgrade for enhanced features. Check the pricing page for details on available plans.</p>
-                    </div>
-
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Billing Support</h3>
-                        <p className="text-muted-foreground">Manage your subscription and payment methods through the customer portal.</p>
-                    </div>
+                    <Subsection title="Billing Support">
+                        Manage your subscription and payment methods through the customer portal.
+                    </Subsection>
                 </div>
-            </section>
+            </ContentSection>
 
-            <section className="mb-8">
-                <h2 className="text-2xl font-bold text-foreground mb-6">Safety & Privacy</h2>
+            <ContentSection title="Safety & Privacy">
+                <div className="grid gap-6 md:grid-cols-1">
+                    <Subsection title="Reporting Issues">
+                        Help keep the community safe. Report any toxic behavior or spam using the report feature.
+                    </Subsection>
 
-                <div className="space-y-6">
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Reporting Issues</h3>
-                        <p className="text-muted-foreground">Help keep the community safe. Report any toxic behavior or spam using the report feature.</p>
-                    </div>
+                    <Subsection title="Blocking Users">
+                        You can block any user to prevent them from contacting you.
+                    </Subsection>
 
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Blocking Users</h3>
-                        <p className="text-muted-foreground">You can block any user to prevent them from contacting you.</p>
-                    </div>
-
-                    <div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Data Protection</h3>
-                        <p className="text-muted-foreground">We value your privacy. We only use your data to provide the service.</p>
-                    </div>
+                    <Subsection title="Data Protection">
+                        We value your privacy. We only use your data to provide the service.
+                    </Subsection>
                 </div>
-            </section>
+            </ContentSection>
         </ContentPageLayout>
     );
 };

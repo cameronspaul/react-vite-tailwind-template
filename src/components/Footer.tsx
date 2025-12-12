@@ -4,7 +4,7 @@ export function Footer() {
     return (
         <footer className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center ">
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-foreground">Company</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">

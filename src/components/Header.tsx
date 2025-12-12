@@ -107,6 +107,14 @@ export function Header() {
             >
               Pricing
             </Link>
+            <Authenticated>
+              <Link
+                to="/settings"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Settings
+              </Link>
+            </Authenticated>
           </div>
           <div className="flex items-center gap-4">
             <StatusBadge />

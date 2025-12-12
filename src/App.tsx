@@ -6,6 +6,7 @@ import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { ProductList } from './pages/TemplatePricing'
 import { BillingProvider } from './hooks/useBillingStatus'
+import Settings from './pages/Settings'
 import AboutUs from './pages/contentpages/AboutUs'
 import CancellationPolicy from './pages/contentpages/CancellationPolicy'
 import CommunityGuidelines from './pages/contentpages/CommunityGuidelines'
@@ -18,6 +19,7 @@ import RefundPolicy from './pages/contentpages/RefundPolicy'
 import ReportBlockFunctionality from './pages/contentpages/ReportBlockFunctionality'
 import SafetyAndSecurity from './pages/contentpages/SafetyAndSecurity'
 import TermsOfService from './pages/contentpages/TermsOfService'
+
 
 function AppContent() {
   const theme = useAppStore((s) => s.theme)
@@ -45,6 +47,7 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/pricing" element={<ProductList />} />
             <Route path="/payment/success" element={<ProductList />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/cancellation-policy" element={<CancellationPolicy />} />
             <Route path="/community-guidelines" element={<CommunityGuidelines />} />

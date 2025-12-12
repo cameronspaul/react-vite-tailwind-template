@@ -34,13 +34,13 @@ export const updateProfile = mutation({
     if (userId === null) {
       throw new Error("Client is not authenticated");
     }
-    
+
     // Filter out undefined values to only update provided fields
     const updateData: any = {};
     if (args.name !== undefined) updateData.name = args.name;
     if (args.image !== undefined) updateData.image = args.image;
     if (args.email !== undefined) updateData.email = args.email;
-    
+
     await ctx.db.patch(userId, updateData);
     return await ctx.db.get(userId);
   },
@@ -54,9 +54,50 @@ export const getAllUsers = query({
     if (userId === null) {
       throw new Error("Client is not authenticated");
     }
-    
+
     // In a real app, you might want to check if the user is an admin
     // For now, we'll just return all users
     return await ctx.db.query("users").collect();
+  },
+});
+
+// Delete the current user and all related data
+export const deleteUser = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      throw new Error("Client is not authenticated");
+    }
+
+    // Delete all auth sessions for this user
+    const authSessions = await ctx.db.query("authSessions")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .collect();
+
+    // Delete refresh tokens associated with these sessions first
+    for (const session of authSessions) {
+      const refreshTokens = await ctx.db.query("authRefreshTokens")
+        .filter((q) => q.eq(q.field("sessionId"), session._id))
+        .collect();
+      for (const token of refreshTokens) {
+        await ctx.db.delete(token._id);
+      }
+      // Then delete the session itself
+      await ctx.db.delete(session._id);
+    }
+
+    // Delete all auth accounts for this user
+    const authAccounts = await ctx.db.query("authAccounts")
+      .filter((q) => q.eq(q.field("userId"), userId))
+      .collect();
+    for (const account of authAccounts) {
+      await ctx.db.delete(account._id);
+    }
+
+    // Finally, delete the user record
+    await ctx.db.delete(userId);
+
+    return { success: true };
   },
 });

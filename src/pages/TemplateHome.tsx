@@ -3,6 +3,7 @@ import viteLogo from '/vite.svg'
 import tailwindLogo from '/tailwind.svg'
 import convexLogo from '/convex.svg'
 import polarshLogo from '/polarsh.svg'
+import shadcnLogo from '/shadcn-ui.svg'
 import { PremiumGate } from '../components/PremiumGate'
 import { Card, CardContent } from '../components/ui/card'
 import { Separator } from '../components/ui/separator'
@@ -28,8 +29,11 @@ function Home() {
           <a href="https://polar.sh/" target="_blank" rel="noreferrer noopener">
             <img src={polarshLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Polarsh logo" />
           </a>
+          <a href="https://ui.shadcn.com/" target="_blank" rel="noreferrer noopener">
+            <img src={shadcnLogo} className="h-16 w-16 hover:scale-110 transition-transform" alt="Shadcn logo" />
+          </a>
         </div>
-        <div className="grid grid-cols-3 items-center gap-5 -mb-12">
+        <div className="grid grid-cols-3 items-center gap-5">
           <div></div>
           <div className="flex flex-col items-center">
             <h1 className="text-5xl font-bold mb-8">Vite + React + Tailwind <span className="opacity-80">+</span></h1>
@@ -53,9 +57,9 @@ function Home() {
           </div>
         </div>
 
-        <Separator className="my-6" />
+        <Separator className="my-8" />
 
-        <p className="mt-8 text-center text-muted-foreground">
+        <p className="text-center text-muted-foreground">
           Click on the logos to learn more
         </p>
         <p className="mt-1 font-mono text-sm text-center text-muted-foreground">

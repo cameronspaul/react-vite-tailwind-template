@@ -5,8 +5,9 @@ import { useAppStore } from './stores/useAppStore'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { ProductList } from './pages/TemplatePricing'
+import { CreditsPage } from './pages/TemplateCredits'
 import { BillingProvider } from './hooks/useBillingStatus'
-import Settings from './pages/Settings'
+import Settings from './pages/TemplateSettings'
 import AboutUs from './pages/contentpages/AboutUs'
 import CancellationPolicy from './pages/contentpages/CancellationPolicy'
 import CommunityGuidelines from './pages/contentpages/CommunityGuidelines'
@@ -47,6 +48,8 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/pricing" element={<ProductList />} />
             <Route path="/payment/success" element={<ProductList />} />
+            <Route path="/credits" element={<CreditsPage />} />
+            <Route path="/credits/success" element={<CreditsPage />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/cancellation-policy" element={<CancellationPolicy />} />

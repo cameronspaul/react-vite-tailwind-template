@@ -155,6 +155,12 @@ export function Header() {
             >
               Pricing
             </Link>
+            <Link
+              to="/credits"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Credits
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <StatusBadge />

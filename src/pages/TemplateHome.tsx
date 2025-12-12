@@ -26,7 +26,7 @@ function Home() {
       <section className="relative py-10 overflow-hidden">
         <div className="container px-4 md:px-6 mx-auto flex flex-col items-center text-center">
           <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium rounded-full">
-            v1.0.0 Now Available
+            Hopefully this is the one
           </Badge>
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
             Build faster with the <br className="hidden md:block" />

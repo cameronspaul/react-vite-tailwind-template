@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
 import { Sun, Moon, Settings, LogOut, CreditCard } from "lucide-react";
@@ -11,6 +11,7 @@ import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { Skeleton } from "./ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,7 +65,11 @@ export function UserProfileHeader() {
   const navigate = useNavigate();
   const { isPremium, isLifetime } = useBillingStatus();
 
-  if (!currentUser) {
+  if (currentUser === undefined) {
+    return <Skeleton className="h-10 w-10 rounded-full" />;
+  }
+
+  if (currentUser === null) {
     return null;
   }
 
@@ -180,6 +185,9 @@ export function Header() {
             <Authenticated>
               <UserProfileHeader />
             </Authenticated>
+            <AuthLoading>
+              <Skeleton className="h-10 w-10 rounded-full" />
+            </AuthLoading>
             <Unauthenticated>
               <Button
                 onClick={handleThemeToggle}

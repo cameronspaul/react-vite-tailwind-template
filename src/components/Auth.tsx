@@ -1,37 +1,40 @@
 import { useAuthActions } from "@convex-dev/auth/react";
 import { Authenticated, Unauthenticated } from "convex/react";
+import { Button } from "./ui/button";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
-  
+
   return (
     <div className="flex flex-col gap-4">
-      <button
+      <Button
         onClick={() => void signIn("github")}
-        className="w-full px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700"
+        variant="default"
+        className="w-full"
       >
         Sign in with GitHub
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => void signIn("google")}
-        className="w-full px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+        variant="outline"
+        className="w-full"
       >
         Sign in with Google
-      </button>
+      </Button>
     </div>
   );
 }
 
 export function SignOut() {
   const { signOut } = useAuthActions();
-  
+
   return (
-    <button
+    <Button
       onClick={() => void signOut()}
-      className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
+      variant="outline"
     >
       Sign out
-    </button>
+    </Button>
   );
 }
 

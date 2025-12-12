@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from './ui/card';
 
 interface Price {
   amountType?: string;
@@ -52,7 +53,7 @@ const getBillingText = (isRecurring: boolean, interval: string | null | undefine
 export const PriceCard: React.FC<PriceCardProps> = ({ product, action }) => {
   // Get the first price from the prices array
   const price = product.prices[0];
-  
+
   if (!price || price.priceAmount === undefined || price.priceCurrency === undefined) {
     return null;
   }
@@ -61,17 +62,23 @@ export const PriceCard: React.FC<PriceCardProps> = ({ product, action }) => {
   const billingText = getBillingText(product.isRecurring, product.recurringInterval);
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow duration-200">
-      <h3 className="text-xl font-semibold text-card-foreground mb-2">
-        {product.name}
-      </h3>
-      <div className="text-2xl font-bold text-primary mb-1">
-        {formattedPrice}
-      </div>
-      <div className="text-sm text-muted-foreground capitalize">
-        {billingText}
-      </div>
-      {action && <div className="mt-4">{action}</div>}
-    </div>
+    <Card className="hover:shadow-lg transition-shadow duration-200">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl">{product.name}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-1">
+        <div className="text-2xl font-bold text-primary">
+          {formattedPrice}
+        </div>
+        <div className="text-sm text-muted-foreground capitalize">
+          {billingText}
+        </div>
+      </CardContent>
+      {action && (
+        <CardFooter>
+          {action}
+        </CardFooter>
+      )}
+    </Card>
   );
 };

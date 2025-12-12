@@ -7,38 +7,44 @@ import { Sun, Moon } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useBillingStatus } from "../hooks/useBillingStatus";
+import { Button } from "./ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
+import { Badge } from "./ui/badge";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
-  
+
   return (
     <div className="flex gap-2">
-      <button
+      <Button
         onClick={() => void signIn("github")}
-        className="px-3 py-1.5 bg-gray-800 text-white rounded text-sm hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+        variant="default"
+        size="sm"
       >
         Sign in with GitHub
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => void signIn("google")}
-        className="px-3 py-1.5 border border-border rounded text-sm hover:bg-muted"
+        variant="outline"
+        size="sm"
       >
         Sign in with Google
-      </button>
+      </Button>
     </div>
   );
 }
 
 export function SignOut() {
   const { signOut } = useAuthActions();
-  
+
   return (
-    <button
+    <Button
       onClick={() => void signOut()}
-      className="px-3 py-1.5 border border-border rounded text-sm hover:bg-muted"
+      variant="outline"
+      size="sm"
     >
       Sign out
-    </button>
+    </Button>
   );
 }
 
@@ -49,16 +55,20 @@ export function UserProfileHeader() {
     return null;
   }
 
+  // Get initials for avatar fallback
+  const initials = currentUser.name
+    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : currentUser.email?.[0]?.toUpperCase() || '?';
+
   return (
     <div className="flex items-center gap-4">
-      {currentUser.image && (
-        <img
-          src={currentUser.image}
-          alt="Profile"
-          className="w-10 h-10 rounded-full"
-        />
-      )}
-      
+      <Avatar className="size-10">
+        {currentUser.image && (
+          <AvatarImage src={currentUser.image} alt="Profile" />
+        )}
+        <AvatarFallback>{initials}</AvatarFallback>
+      </Avatar>
+
       <div className="flex items-center gap-3">
         <div>
           <p className="text-sm font-medium">
@@ -97,18 +107,19 @@ export function Header() {
             >
               Pricing
             </Link>
-      </div>
-      <div className="flex items-center gap-4">
-        <StatusBadge />
-        <button
-          onClick={handleThemeToggle}
-          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card text-foreground hover:bg-muted px-3 py-2 text-sm transition-colors"
-          aria-label="Toggle theme"
-          title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+          </div>
+          <div className="flex items-center gap-4">
+            <StatusBadge />
+            <Button
+              onClick={handleThemeToggle}
+              variant="outline"
+              size="sm"
+              aria-label="Toggle theme"
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
               {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               <span className="font-medium">{theme === 'light' ? 'Dark' : 'Light'}</span>
-            </button>
+            </Button>
             <Authenticated>
               <UserProfileHeader />
             </Authenticated>
@@ -134,18 +145,20 @@ function StatusBadge() {
           ? "Premium"
           : "Free";
 
-  const tone =
+  const variant =
     label === "Premium" || label === "Lifetime"
-      ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+      ? "default"
       : label === "Checking..."
-        ? "bg-blue-100 text-blue-800 border-blue-200"
-        : "bg-gray-100 text-gray-700 border-gray-200";
+        ? "secondary"
+        : "outline";
 
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium border ${tone}`}
-    >
+    <Badge variant={variant} className={
+      label === "Premium" || label === "Lifetime"
+        ? "bg-emerald-500 text-white hover:bg-emerald-600"
+        : undefined
+    }>
       {label}
-    </span>
+    </Badge>
   );
 }

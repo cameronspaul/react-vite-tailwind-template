@@ -5,6 +5,12 @@ import { api } from "../../convex/_generated/api";
 import { PriceCard } from "../components/PriceCard";
 import { staticProducts, type ProductWithCheckout } from "../components/staticProducts";
 import { useBillingStatus } from "../hooks/useBillingStatus";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import { Badge } from "../components/ui/badge";
+import { Skeleton } from "../components/ui/skeleton";
+import { CheckCircle, AlertTriangle, Info } from "lucide-react";
 
 export const ProductList = () => {
   const location = useLocation();
@@ -33,9 +39,9 @@ export const ProductList = () => {
         ? "Not signed in"
         : billing.isLifetime
           ? "Lifetime premium"
-        : billing.isPremium
-          ? "Recurring subscription"
-          : "Free plan";
+          : billing.isPremium
+            ? "Recurring subscription"
+            : "Free plan";
 
   const searchParams = new URLSearchParams(location.search);
   const checkoutId = searchParams.get("checkout_id");
@@ -73,22 +79,18 @@ export const ProductList = () => {
   const renderCheckoutCta = (
     product: ProductWithCheckout,
     label: string,
-    variant: "primary" | "ghost" = "primary"
+    variant: "default" | "outline" | "ghost" = "default"
   ) => {
     if (!product.checkoutUrl) {
       return (
-        <div className="text-sm text-orange-800 bg-orange-50 border border-orange-200 rounded-md px-3 py-2 inline-block">
-          Checkout link missing. Set the matching VITE_CHECKOUT_LINK_* env var.
-        </div>
+        <Alert variant="destructive" className="bg-orange-50 border-orange-200 text-orange-800">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Checkout link missing. Set the matching VITE_CHECKOUT_LINK_* env var.
+          </AlertDescription>
+        </Alert>
       );
     }
-
-    const baseClasses =
-      "inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold";
-    const styles =
-      variant === "primary"
-        ? "bg-primary text-primary-foreground hover:opacity-90"
-        : "border border-border hover:bg-muted";
 
     const checkoutHref = addPrefillParams(
       product.checkoutUrl,
@@ -97,12 +99,11 @@ export const ProductList = () => {
     );
 
     return (
-      <a
-        href={checkoutHref}
-        className={`${baseClasses} ${styles}`}
-      >
-        {label}
-      </a>
+      <Button asChild variant={variant}>
+        <a href={checkoutHref}>
+          {label}
+        </a>
+      </Button>
     );
   };
 
@@ -110,6 +111,13 @@ export const ProductList = () => {
     <p className="text-sm text-muted-foreground">
       Sign in to purchase or manage premium access.
     </p>
+  );
+
+  const renderLoadingState = () => (
+    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <Skeleton className="h-4 w-4 rounded-full" />
+      <span>Checking your billing status...</span>
+    </div>
   );
 
   return (
@@ -132,23 +140,29 @@ export const ProductList = () => {
       </div>
 
       {showSuccess && (
-        <div className="border border-green-200 bg-green-50 text-green-800 rounded-md p-4">
-          <p className="font-semibold">Congratulations - you are now premium!</p>
+        <Alert className="bg-green-50 border-green-200 text-green-800">
+          <CheckCircle className="h-4 w-4" />
+          <AlertTitle>Congratulations - you are now premium!</AlertTitle>
           {checkoutId && (
-            <p className="text-sm">Checkout ID: {checkoutId}</p>
+            <AlertDescription>Checkout ID: {checkoutId}</AlertDescription>
           )}
-        </div>
+        </Alert>
       )}
 
-      <div className="rounded-lg border border-border bg-card p-4">
-        <p className="text-sm text-muted-foreground">Current status</p>
-        <p className="text-xl font-semibold leading-tight">{statusLabel}</p>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Current status</p>
+          <p className="text-xl font-semibold leading-tight">{statusLabel}</p>
+        </CardContent>
+      </Card>
 
       {staticProducts.length === 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-md p-4">
-          No products configured. Add plans in <code>src/staticProducts.ts</code>.
-        </div>
+        <Alert className="bg-yellow-50 border-yellow-200 text-yellow-800">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            No products configured. Add plans in <code className="text-sm">src/staticProducts.ts</code>.
+          </AlertDescription>
+        </Alert>
       )}
 
       <div className="space-y-10">
@@ -159,14 +173,15 @@ export const ProductList = () => {
               Pick a recurring plan (weekly/monthly/quarterly/semiannual). Checkout links come from env.
             </p>
             {!billingReady && (
-              <p className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block mt-2">
-                Checking your billing status...
-              </p>
+              <div className="mt-2">{renderLoadingState()}</div>
             )}
             {billingReady && hasLifetime && (
-              <p className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block mt-2">
-                Lifetime access is active. Subscriptions are disabled.
-              </p>
+              <Alert className="mt-2 bg-green-50 border-green-200 text-green-700">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Lifetime access is active. Subscriptions are disabled.
+                </AlertDescription>
+              </Alert>
             )}
           </div>
           {recurringProducts.length > 0 && (
@@ -177,15 +192,13 @@ export const ProductList = () => {
                   product={product}
                   action={
                     !billingReady ? (
-                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
-                        Checking your billing status...
-                      </div>
+                      renderLoadingState()
                     ) : !billing.data ? (
                       renderSignInPrompt()
                     ) : hasLifetime ? (
-                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                      <Badge variant="secondary">
                         Lifetime is active; no subscription needed.
-                      </div>
+                      </Badge>
                     ) : billing.data?.isPremium && hasSubscription ? (
                       <CustomerPortalLink
                         polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}
@@ -196,9 +209,9 @@ export const ProductList = () => {
                     ) : canSubscribe ? (
                       renderCheckoutCta(product, "Start subscription")
                     ) : (
-                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
+                      <Badge variant="secondary">
                         Subscriptions unavailable while lifetime is active.
-                      </div>
+                      </Badge>
                     )
                   }
                 />
@@ -222,15 +235,16 @@ export const ProductList = () => {
                   product={product}
                   action={
                     !billingReady ? (
-                      <div className="text-sm text-muted-foreground bg-muted border border-border rounded-md px-3 py-2 inline-block">
-                        Checking your billing status...
-                      </div>
+                      renderLoadingState()
                     ) : !billing.data ? (
                       renderSignInPrompt()
                     ) : billing.data?.isLifetime ? (
-                      <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2 inline-block">
-                        Lifetime premium is active for your account.
-                      </div>
+                      <Alert className="bg-green-50 border-green-200 text-green-700">
+                        <CheckCircle className="h-4 w-4" />
+                        <AlertDescription>
+                          Lifetime premium is active for your account.
+                        </AlertDescription>
+                      </Alert>
                     ) : (
                       <div className="space-y-2">
                         {hasSubscription && (
@@ -241,7 +255,7 @@ export const ProductList = () => {
                         {renderCheckoutCta(
                           product,
                           hasSubscription ? "Upgrade to lifetime" : "Buy lifetime access",
-                          "ghost"
+                          "outline"
                         )}
                       </div>
                     )

@@ -3,16 +3,13 @@ import viteLogo from '/vite.svg'
 import tailwindLogo from '/tailwind.svg'
 import convexLogo from '/convex.svg'
 import polarshLogo from '/polarsh.svg'
-import { Helmet } from 'react-helmet-async'
 import { PremiumGate } from '../components/PremiumGate'
+import { Card, CardContent } from '../components/ui/card'
+import { Separator } from '../components/ui/separator'
 
 function Home() {
   return (
     <>
-      <Helmet>
-        <title>Home - React Vite Tailwind Template</title>
-        <meta name="description" content="Welcome to the home page of our React application with Vite and Tailwind CSS." />
-      </Helmet>
       <div className="bg-background text-foreground flex flex-col items-center py-8">
 
         <div className="flex space-x-4 mb-8">
@@ -42,10 +39,10 @@ function Home() {
               <a href="https://www.npmjs.com/package/react-router-dom" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Router DOM</a>
               <a href="https://www.npmjs.com/package/zustand" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Zustand</a>
               <a href="https://www.npmjs.com/package/@tanstack/react-query" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">TanStack Query</a>
-              <a href="https://www.npmjs.com/package/react-helmet-async" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Helmet</a>
               <a href="https://www.npmjs.com/package/react-hook-form" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Hook Form</a>
-              <a href="https://www.npmjs.com/package/lucide-react" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Lucide React</a>
               <a href="https://www.npmjs.com/package/react-hot-toast" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Hot Toast</a>
+              <a href="https://www.npmjs.com/package/lucide-react" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Lucide React</a>
+              <a href="https://www.npmjs.com/package/shadcn-ui" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Shadcn UI</a>
               <div className="text-foreground">Convex Auth</div>
               <div className="text-foreground">Convex Database</div>
               <div className="text-foreground">Convex Polar Payment Integration</div>
@@ -55,6 +52,9 @@ function Home() {
             </div>
           </div>
         </div>
+
+        <Separator className="my-6" />
+
         <p className="mt-8 text-center text-muted-foreground">
           Click on the logos to learn more
         </p>
@@ -64,18 +64,22 @@ function Home() {
         <div className="mt-10 w-full max-w-2xl">
           <PremiumGate
             fallback={
-              <div className="rounded-lg border border-border bg-card p-4 text-center space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  Premium-only section - sign in and upgrade to unlock.
-                </p>
-              </div>
+              <Card>
+                <CardContent className="pt-6 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Premium-only section - sign in and upgrade to unlock.
+                  </p>
+                </CardContent>
+              </Card>
             }
           >
-            <div className="rounded-lg border border-border bg-card p-4 text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                You have premium access. This gate uses the Polar-backed check everywhere.
-              </p>
-            </div>
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  You have premium access. This gate uses the Polar-backed check everywhere.
+                </p>
+              </CardContent>
+            </Card>
           </PremiumGate>
         </div>
       </div>

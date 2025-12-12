@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
@@ -7,7 +7,6 @@ import { Sun, Moon, Settings, LogOut, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBillingStatus } from "../hooks/useBillingStatus";
-import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
@@ -133,12 +132,7 @@ export function UserProfileHeader() {
           <span>Settings</span>
         </DropdownMenuItem>
         {hasPremiumAccess && (
-          <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
-            <DropdownMenuItem>
-              <CreditCard className="mr-2 h-4 w-4" />
-              <span>Customer Portal</span>
-            </DropdownMenuItem>
-          </CustomerPortalLink>
+          <CustomerPortalMenuItem />
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
@@ -205,6 +199,20 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function CustomerPortalMenuItem() {
+  const generateUrl = useAction(api.polar.generateCustomerPortalUrl);
+
+  return (
+    <DropdownMenuItem onClick={async () => {
+      const result = await generateUrl();
+      if (result?.url) window.open(result.url, "_blank");
+    }}>
+      <CreditCard className="mr-2 h-4 w-4" />
+      <span>Customer Portal</span>
+    </DropdownMenuItem>
   );
 }
 

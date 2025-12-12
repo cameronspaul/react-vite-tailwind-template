@@ -3,13 +3,21 @@ import { api } from "../../convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
-import { Sun, Moon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Sun, Moon, Settings, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBillingStatus } from "../hooks/useBillingStatus";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
@@ -50,6 +58,9 @@ export function SignOut() {
 
 export function UserProfileHeader() {
   const currentUser = useQuery(api.users.getCurrentUser);
+  const { signOut } = useAuthActions();
+  const { theme, toggleTheme } = useAppStore();
+  const navigate = useNavigate();
 
   if (!currentUser) {
     return null;
@@ -60,27 +71,64 @@ export function UserProfileHeader() {
     ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
     : currentUser.email?.[0]?.toUpperCase() || '?';
 
-  return (
-    <div className="flex items-center gap-4">
-      <Avatar className="size-10">
-        {currentUser.image && (
-          <AvatarImage src={currentUser.image} alt="Profile" />
-        )}
-        <AvatarFallback>{initials}</AvatarFallback>
-      </Avatar>
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    toggleTheme();
+    toast.success(`Switched to ${newTheme} mode`);
+  };
 
-      <div className="flex items-center gap-3">
-        <div>
-          <p className="text-sm font-medium">
-            {currentUser.name || "No name set"}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {currentUser.email || "No email set"}
-          </p>
-        </div>
-        <SignOut />
-      </div>
-    </div>
+  const handleSignOut = () => {
+    void signOut();
+    toast.success("Signed out successfully");
+  };
+
+  const handleNavigateToSettings = () => {
+    navigate("/settings");
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Avatar className="h-10 w-10">
+            {currentUser.image && (
+              <AvatarImage src={currentUser.image} alt="Profile" />
+            )}
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {currentUser.name || "No name set"}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {currentUser.email || "No email set"}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleThemeToggle}>
+          {theme === 'light' ? (
+            <Moon className="mr-2 h-4 w-4" />
+          ) : (
+            <Sun className="mr-2 h-4 w-4" />
+          )}
+          <span>{theme === 'light' ? 'Dark mode' : 'Light mode'}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleNavigateToSettings}>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={handleSignOut}>
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Sign out</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -107,31 +155,23 @@ export function Header() {
             >
               Pricing
             </Link>
-            <Authenticated>
-              <Link
-                to="/settings"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Settings
-              </Link>
-            </Authenticated>
           </div>
           <div className="flex items-center gap-4">
             <StatusBadge />
-            <Button
-              onClick={handleThemeToggle}
-              variant="ghost"
-              size="icon"
-              aria-label="Toggle theme"
-              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            >
-              {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-              <span className="sr-only">Toggle theme</span>
-            </Button>
             <Authenticated>
               <UserProfileHeader />
             </Authenticated>
             <Unauthenticated>
+              <Button
+                onClick={handleThemeToggle}
+                variant="ghost"
+                size="icon"
+                aria-label="Toggle theme"
+                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              >
+                {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
               <SignIn />
             </Unauthenticated>
           </div>

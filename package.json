@@ -11,28 +11,28 @@
   "dependencies": {
     "@auth/core": "^0.37.0",
     "@convex-dev/auth": "^0.0.90",
-    "@convex-dev/polar": "^0.7.1",
+    "@convex-dev/polar": "^0.7.3",
     "@polar-sh/sdk": "^0.41.5",
-    "@tailwindcss/vite": "^4.1.14",
-    "@tanstack/react-query": "^5.90.2",
-    "@tanstack/react-query-devtools": "^5.90.2",
-    "convex": "^1.28.2",
-    "lucide-react": "^0.545.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-query-devtools": "^5.91.1",
+    "convex": "^1.31.0",
+    "lucide-react": "^0.560.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
     "react-helmet-async": "^2.0.5",
-    "react-hook-form": "^7.64.0",
+    "react-hook-form": "^7.68.0",
     "react-hot-toast": "^2.6.0",
-    "react-router-dom": "^7.9.4",
-    "tailwindcss": "^4.1.14",
-    "zustand": "^5.0.8"
+    "react-router-dom": "^7.10.1",
+    "tailwindcss": "^4.1.18",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@types/node": "^24.6.0",
-    "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@types/node": "^25.0.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
     "typescript": "~5.9.3",
-    "vite": "^7.1.7"
+    "vite": "^7.2.7"
   }
 }

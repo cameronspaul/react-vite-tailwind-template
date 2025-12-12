@@ -1,3 +1,26 @@
+@import "tailwindcss";
+
+/* 
+ * Tailwind CSS v4 Theme Configuration
+ * Using CSS-first configuration with @theme directive
+ */
+@theme {
+  /* Custom color tokens - these enable classes like bg-background, text-foreground, etc. */
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-card: var(--color-card);
+  --color-card-foreground: var(--color-card-foreground);
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+  --color-border: var(--color-border);
+  --color-input: var(--color-input);
+  --color-ring: var(--color-ring);
+  --color-primary: var(--color-primary);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-destructive: var(--color-destructive);
+  --color-destructive-foreground: var(--color-destructive-foreground);
+}
+
 :root {
   /* Light theme tokens */
   --color-background: oklch(98.5% 0.004 250);
@@ -42,32 +65,9 @@
   --color-destructive: oklch(55% 0.23 24);
   --color-destructive-foreground: oklch(98% 0.004 250);
 }
-@import "tailwindcss";
 
 /* Base styles that respond to theme tokens */
 html, body {
   background-color: var(--color-background);
   color: var(--color-foreground);
 }
-
-/* Semantic utility shims to ensure theme works even if Tailwind tokens aren't picked up */
-.bg-background { background-color: var(--color-background); }
-.text-foreground { color: var(--color-foreground); }
-.bg-card { background-color: var(--color-card); }
-.text-card-foreground { color: var(--color-card-foreground); }
-.bg-muted { background-color: var(--color-muted); }
-.text-muted-foreground { color: var(--color-muted-foreground); }
-.border-border { border-color: var(--color-border); }
-.bg-input { background-color: var(--color-input); }
-.bg-primary { background-color: var(--color-primary); }
-.text-primary-foreground { color: var(--color-primary-foreground); }
-.text-destructive { color: var(--color-destructive); }
-
-/* Ring and placeholder helpers matching Tailwind's class names */
-.ring-primary { --tw-ring-color: var(--color-primary); }
-.focus\:ring-primary:focus { --tw-ring-color: var(--color-primary); }
-.placeholder\:text-muted-foreground::placeholder { color: var(--color-muted-foreground); }
-
-/* Hover variants used in components */
-.hover\:bg-primary\/90:hover { background-color: color-mix(in oklch, var(--color-primary) 90%, transparent); }
-.hover\:bg-muted:hover { background-color: var(--color-muted); }

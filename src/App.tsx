@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import Home from './pages/TemplateHome'
 import { useAppStore } from './stores/useAppStore'
 import { Header } from './components/Header'
@@ -19,8 +19,9 @@ import ReportBlockFunctionality from './pages/contentpages/ReportBlockFunctional
 import SafetyAndSecurity from './pages/contentpages/SafetyAndSecurity'
 import TermsOfService from './pages/contentpages/TermsOfService'
 
-function App() {
+function AppContent() {
   const theme = useAppStore((s) => s.theme)
+  const { pathname } = useLocation()
 
   useEffect(() => {
     const root = document.documentElement
@@ -29,34 +30,45 @@ function App() {
     else root.classList.remove('dark')
   }, [theme])
 
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+
+  return (
+    <BillingProvider>
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/pricing" element={<ProductList />} />
+            <Route path="/payment/success" element={<ProductList />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+            <Route path="/community-guidelines" element={<CommunityGuidelines />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/help-support" element={<HelpSupport />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/report-block-functionality" element={<ReportBlockFunctionality />} />
+            <Route path="/safety-and-security" element={<SafetyAndSecurity />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </BillingProvider>
+  )
+}
+
+function App() {
   return (
     <BrowserRouter>
-      <BillingProvider>
-        <div className="min-h-screen bg-background flex flex-col">
-          <Header />
-
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/pricing" element={<ProductList />} />
-              <Route path="/payment/success" element={<ProductList />} />
-              <Route path="/about-us" element={<AboutUs />} />
-              <Route path="/cancellation-policy" element={<CancellationPolicy />} />
-              <Route path="/community-guidelines" element={<CommunityGuidelines />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/cookie-policy" element={<CookiePolicy />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/help-support" element={<HelpSupport />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/refund-policy" element={<RefundPolicy />} />
-              <Route path="/report-block-functionality" element={<ReportBlockFunctionality />} />
-              <Route path="/safety-and-security" element={<SafetyAndSecurity />} />
-              <Route path="/terms-of-service" element={<TermsOfService />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </BillingProvider>
+      <AppContent />
     </BrowserRouter>
   )
 }

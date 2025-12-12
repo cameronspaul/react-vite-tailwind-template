@@ -145,7 +145,7 @@ function Home() {
       </section>
 
       {/* Premium Gate Demo */}
-      <section className="py-24 bg-muted/20">
+      <section className="py-24">
         <div className="container px-4 mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold tracking-tight mb-4">Premium Features</h2>

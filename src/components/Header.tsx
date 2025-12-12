@@ -94,7 +94,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-card shadow-sm border-b border-border">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center gap-6">
@@ -103,7 +103,7 @@ export function Header() {
             </Link>
             <Link
               to="/pricing"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Pricing
             </Link>
@@ -112,13 +112,13 @@ export function Header() {
             <StatusBadge />
             <Button
               onClick={handleThemeToggle}
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               aria-label="Toggle theme"
               title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
-              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-              <span className="font-medium">{theme === 'light' ? 'Dark' : 'Light'}</span>
+              {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              <span className="sr-only">Toggle theme</span>
             </Button>
             <Authenticated>
               <UserProfileHeader />
@@ -153,11 +153,7 @@ function StatusBadge() {
         : "outline";
 
   return (
-    <Badge variant={variant} className={
-      label === "Premium" || label === "Lifetime"
-        ? "bg-emerald-500 text-white hover:bg-emerald-600"
-        : undefined
-    }>
+    <Badge variant={variant}>
       {label}
     </Badge>
   );

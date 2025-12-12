@@ -258,8 +258,8 @@ export const ProductList = () => {
       </div>
 
       {showSuccess && (
-        <Alert className="bg-green-50 border-green-200 text-green-800 mb-8 max-w-2xl mx-auto">
-          <CheckCircle className="h-4 w-4" />
+        <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
+          <CheckCircle className="h-4 w-4 text-primary" />
           <AlertTitle>Payment Successful!</AlertTitle>
           <AlertDescription>Your account has been upgraded.</AlertDescription>
         </Alert>

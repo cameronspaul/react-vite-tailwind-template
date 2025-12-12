@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface ContentPageLayoutProps {
@@ -10,6 +10,12 @@ interface ContentPageLayoutProps {
 }
 
 const ContentPageLayout: React.FC<ContentPageLayoutProps> = ({ title, subtitle, description, children }) => {
+    // Scroll to top whenever this layout mounts (i.e., when navigating to any content page)
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+
     return (
         <div className="min-h-screen">
             <div className="container mx-auto max-w-5xl py-12 px-4 sm:px-6 lg:px-8">
@@ -34,7 +40,7 @@ const ContentPageLayout: React.FC<ContentPageLayoutProps> = ({ title, subtitle, 
 
                 {/* Content Card */}
                 <Card className="border-border/50 shadow-2xl bg-card/50 backdrop-blur-sm">
-                    <CardContent className="p-8 space-y-8">
+                    <CardContent className="space-y-8">
                         {children}
                     </CardContent>
                 </Card>

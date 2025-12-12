@@ -217,6 +217,8 @@ This template follows a **minimal local storage approach** for payment and custo
 - **Real-time Validation**: Billing status is always fetched fresh from Polar via the [`getBillingStatus`](convex/polar.ts:104) function
 - **Webhook Integration**: Polar webhooks in [`convex/http.ts`](convex/http.ts:9) handle real-time events without storing data locally
 
+Note: The client uses browser localStorage to cache billing status briefly for smooth UI rendering. This is purely a UX optimization - the source of truth is always Polar, validated in the background on every page load.
+
 #### Benefits of This Approach
 
 1. **Simplified Architecture**: No data synchronization complexity between Convex and Polar

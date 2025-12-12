@@ -265,15 +265,6 @@ export const ProductList = () => {
         </Alert>
       )}
 
-      {billing.isPremium && (
-        <div className="flex justify-center mb-12">
-          <Button asChild variant="outline">
-            <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
-              Open Customer Portal
-            </CustomerPortalLink>
-          </Button>
-        </div>
-      )}
 
       {/* Subscription Plans */}
       {recurringProducts.length > 0 && (

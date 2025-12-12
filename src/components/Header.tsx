@@ -3,10 +3,11 @@ import { api } from "../../convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
-import { Sun, Moon, Settings, LogOut } from "lucide-react";
+import { Sun, Moon, Settings, LogOut, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBillingStatus } from "../hooks/useBillingStatus";
+import { CustomerPortalLink } from "@convex-dev/polar/react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Badge } from "./ui/badge";
@@ -61,10 +62,14 @@ export function UserProfileHeader() {
   const { signOut } = useAuthActions();
   const { theme, toggleTheme } = useAppStore();
   const navigate = useNavigate();
+  const { isPremium, isLifetime } = useBillingStatus();
 
   if (!currentUser) {
     return null;
   }
+
+  // Check if user has premium access (either premium subscription or lifetime)
+  const hasPremiumAccess = isPremium || isLifetime;
 
   // Get initials for avatar fallback
   const initials = currentUser.name
@@ -122,6 +127,14 @@ export function UserProfileHeader() {
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
+        {hasPremiumAccess && (
+          <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
+            <DropdownMenuItem>
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span>Customer Portal</span>
+            </DropdownMenuItem>
+          </CustomerPortalLink>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />

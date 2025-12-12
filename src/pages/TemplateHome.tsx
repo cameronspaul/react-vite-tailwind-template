@@ -40,7 +40,7 @@ function Home() {
               <a href="https://www.npmjs.com/package/zustand" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Zustand</a>
               <a href="https://www.npmjs.com/package/@tanstack/react-query" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">TanStack Query</a>
               <a href="https://www.npmjs.com/package/react-hook-form" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Hook Form</a>
-              <a href="https://www.npmjs.com/package/react-hot-toast" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">React Hot Toast</a>
+              <a href="https://sonner.emilkowal.ski/" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Sonner</a>
               <a href="https://www.npmjs.com/package/lucide-react" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Lucide React</a>
               <a href="https://www.npmjs.com/package/shadcn-ui" target="_blank" rel="noopener noreferrer" className="text-foreground hover:text-primary transition-colors underline block">Shadcn UI</a>
               <div className="text-foreground">Convex Auth</div>
@@ -65,7 +65,7 @@ function Home() {
           <PremiumGate
             fallback={
               <Card>
-                <CardContent className="pt-6 text-center">
+                <CardContent className="text-center">
                   <p className="text-sm text-muted-foreground">
                     Premium-only section - sign in and upgrade to unlock.
                   </p>
@@ -74,7 +74,7 @@ function Home() {
             }
           >
             <Card>
-              <CardContent className="pt-6 text-center">
+              <CardContent className="text-center">
                 <p className="text-sm text-muted-foreground">
                   You have premium access. This gate uses the Polar-backed check everywhere.
                 </p>

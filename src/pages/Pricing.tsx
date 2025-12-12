@@ -150,7 +150,7 @@ export const ProductList = () => {
       )}
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <p className="text-sm text-muted-foreground">Current status</p>
           <p className="text-xl font-semibold leading-tight">{statusLabel}</p>
         </CardContent>

@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/TemplateHome'
 import { useAppStore } from './stores/useAppStore'
 import { Header } from './components/Header'
-import { ProductList } from './pages/Pricing'
+import { ProductList } from './pages/TemplatePricing'
 import { BillingProvider } from './hooks/useBillingStatus'
 
 function App() {

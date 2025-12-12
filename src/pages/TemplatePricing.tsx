@@ -16,7 +16,7 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
-import { Check, AlertTriangle, CheckCircle, Info } from "lucide-react";
+import { Check, AlertTriangle, CheckCircle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
 
 export const ProductList = () => {
@@ -252,7 +252,7 @@ export const ProductList = () => {
           Simple, transparent pricing
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Choose the plan that's right for you. All plans include a 7-day free trial.
+          Choose the plan that's right for you.
           No hidden fees.
         </p>
       </div>
@@ -263,6 +263,16 @@ export const ProductList = () => {
           <AlertTitle>Payment Successful!</AlertTitle>
           <AlertDescription>Your account has been upgraded.</AlertDescription>
         </Alert>
+      )}
+
+      {billing.isPremium && (
+        <div className="flex justify-center mb-12">
+          <Button asChild variant="outline">
+            <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
+              Open Customer Portal
+            </CustomerPortalLink>
+          </Button>
+        </div>
       )}
 
       {/* Subscription Plans */}

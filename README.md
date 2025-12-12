@@ -1,231 +1,161 @@
-# react-vite-tailwind-template
+# React Vite Tailwind Boilerplate
 
-A modern, production-ready React template with authentication, real-time data, and comprehensive tooling. This template combines the best of React's ecosystem with Convex's backend-as-a-service for rapid application development.
+A modern, full-stack boilerplate for building React applications with Vite, Tailwind CSS, Shadcn UI, Convex backend, and Polar billing integration.
 
-## ✨ Features
+## Features
 
-- **🚀 Modern React Stack** - React 19 with TypeScript, Vite, and Tailwind CSS v4
-- **🔐 Authentication Ready** - OAuth integration with GitHub and Google via Convex Auth
-- **💳 Premium Monetization** - Complete subscription system with Polar integration and premium feature gating
-- **📊 Real-time Database** - Convex backend with auto-generated type-safe API
-- **🎨 Beautiful UI** - Dark/light theme with semantic design tokens and responsive pricing components
-- **⚡ Fast Development** - Hot module replacement and optimized build pipeline
-- **📱 Responsive Design** - Mobile-first approach with Tailwind utilities
-- **🔧 Developer Experience** - Strict TypeScript, comprehensive tooling, and clear conventions
+- ⚡ **Vite** - Fast build tool and dev server
+- ⚛️ **React 19** - Latest React with modern hooks and features
+- 🎨 **Tailwind CSS 4** - Utility-first CSS framework
+- 🧩 **Shadcn UI** - Beautiful, accessible component library
+- 🔐 **Authentication** - OAuth integration with Google and GitHub
+- 💾 **Backend** - Convex for real-time database and serverless functions
+- 💳 **Billing** - Polar integration for subscription management
+- 📱 **Responsive** - Mobile-first design with Tailwind
+- 🔧 **TypeScript** - Full type safety throughout the application
+- 🛠️ **Developer Experience** - Hot reload, ESLint, and optimized build
 
-## 🚀 Quick Start
+## Tech Stack
 
-Get your application running in minutes:
+### Frontend
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS 4
+- Shadcn UI (Radix UI components)
+- React Router DOM
+- React Hook Form with Zod validation
+- Zustand for state management
+- TanStack Query for data fetching
+- Lucide React for icons
 
+### Backend
+- Convex - Real-time database and serverless functions
+- Convex Auth - Authentication system
+
+### Billing
+- Polar.sh - Subscription and payment processing
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- Node.js (version 18 or higher)
+- npm or yarn
+- Git
+
+## Installation
+
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone <repository-url>
+git clone <your-repo-url>
 cd react-vite-tailwind-template
+```
 
-# Install dependencies
+2. Install dependencies:
+```bash
 npm install
+```
 
-# Set up environment variables
-cp .env .env.local
-# Edit .env.local with your Convex, OAuth, and Polar credentials
+3. Set up Convex:
+```bash
+npx convex dev --once
+```
 
-# Start Convex backend (in a separate terminal)
-npx convex dev
+4. Copy the environment file and configure it:
+```bash
+cp .env.example .env
+```
 
-# Start the development server
+## Environment Setup
+
+Configure the following environment variables in your `.env` file:
+
+### Required
+- `SITE_URL` - Your application's URL (e.g., `http://localhost:5173` for development)
+- `CONVEX_DEPLOYMENT` - Your Convex deployment name
+- `VITE_CONVEX_URL` - Your Convex deployment URL
+
+### Authentication (OAuth)
+- `GOOGLE_CLIENT_ID` - Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth client secret
+- `GITHUB_CLIENT_ID` - GitHub OAuth client ID
+- `GITHUB_CLIENT_SECRET` - GitHub OAuth client secret
+- `JWT_PRIVATE_KEY` - Private key for JWT signing
+- `JWKS` - JSON Web Key Set for JWT verification
+
+### Billing (Polar)
+- `POLAR_ORGANIZATION_TOKEN` - Your Polar organization token
+- `POLAR_WEBHOOK_SECRET` - Polar webhook secret
+- `POLAR_SERVER` - Environment (`sandbox` or `production`)
+- `POLAR_SUCCESS_URL` - Success URL after payment
+- `VITE_CHECKOUT_LINK_*` - Checkout links for different subscription tiers
+
+## Running the Application
+
+### Development
+```bash
 npm run dev
 ```
 
-Visit `http://localhost:5173` to see your application running!
+This will start the Vite development server at `http://localhost:5173`.
 
-## 📁 Project Structure
+### Build for Production
+```bash
+npm run build
+```
+
+### Preview Production Build
+```bash
+npm run preview
+```
+
+## Project Structure
 
 ```
-├── src/
-│   ├── components/          # Reusable React components
-│   │   ├── Auth.tsx        # Authentication components
-│   │   ├── Header.tsx      # Main header with theme toggle
-│   │   ├── PremiumGate.tsx # Premium feature access control
-│   │   ├── PriceCard.tsx   # Pricing display component
-│   │   └── staticProducts.ts # Product catalog configuration
-│   ├── pages/              # Route-level page components
-│   │   ├── TemplateHome.tsx # Home page
-│   │   └── Pricing.tsx     # Pricing page component
-│   ├── hooks/              # Custom React hooks
-│   │   └── useBillingStatus.tsx # Billing status management
-│   ├── stores/             # State management
-│   │   └── useAppStore.ts  # Zustand store for app state
-│   ├── App.tsx             # Main application component
-│   ├── main.tsx            # Application entry point
-│   └── theme.css           # CSS theme variables
-├── convex/                 # Convex backend
-│   ├── schema.ts           # Database schema definition
+├── convex/                 # Convex backend functions and configuration
+│   ├── _generated/         # Auto-generated Convex types
 │   ├── auth.config.ts      # Authentication configuration
 │   ├── auth.ts             # Authentication logic
-│   ├── polar.ts            # Polar payment integration
+│   ├── http.ts             # HTTP endpoints
+│   ├── polar.ts            # Polar billing integration
+│   ├── schema.ts           # Database schema
 │   ├── users.ts            # User-related functions
-│   └── _generated/         # Auto-generated types and API
+│   └── convex.config.ts    # Convex configuration
 ├── public/                 # Static assets
-└── config files            # TypeScript, Vite, and Tailwind configs
+├── src/
+│   ├── components/
+│   │   ├── ui/             # Shadcn UI components
+│   │   ├── Auth.tsx        # Authentication component
+│   │   ├── Header.tsx      # Header component
+│   │   ├── PremiumGate.tsx # Premium feature gate
+│   │   └── PriceCard.tsx   # Pricing card component
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utility functions
+│   ├── pages/              # Page components
+│   ├── stores/             # Zustand stores
+│   ├── App.tsx             # Main app component
+│   ├── main.tsx            # App entry point
+│   └── index.css           # Global styles
+├── .env.example            # Environment variables template
+├── components.json         # Shadcn UI configuration
+├── package.json            # Dependencies and scripts
+├── tsconfig.json           # TypeScript configuration
+├── vite.config.ts          # Vite configuration
+└── tailwind.config.js      # Tailwind CSS configuration
 ```
 
-## 🏗️ Architecture Overview
+## Scripts
 
-### Provider Stack
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build locally
 
-The application uses a layered provider architecture in [`main.tsx`](src/main.tsx):
+## Convex Commands
 
-```tsx
-<StrictMode>
-  <HelmetProvider>
-    <QueryClientProvider>
-      <ConvexAuthProvider>
-        <Toaster />
-        <App />
-      </ConvexAuthProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-</StrictMode>
-```
-
-### Key Technologies
-
-| Category | Technology | Version | Purpose |
-|----------|------------|---------|---------|
-| **Project** | react-vite-tailwind-template | 0.0.0 | Project name and version |
-| **Frontend** | React | 19.1.1 | UI library |
-| | React DOM | 19.1.1 | React DOM renderer |
-| | TypeScript | 5.9.3 | Type safety |
-| | Vite | 7.1.7 | Build tool & dev server |
-| | Tailwind CSS | 4.1.14 | Styling framework |
-| | @tailwindcss/vite | 4.1.14 | Tailwind Vite integration |
-| | React Router DOM | 7.9.4 | Client-side routing |
-| | React Helmet Async | 2.0.5 | Head management |
-| | Lucide React | 0.545.0 | Icon library |
-| | React Hook Form | 7.64.0 | Form handling |
-| | React Hot Toast | 2.6.0 | Toast notifications |
-| **State Management** | Zustand | 5.0.8 | Client state |
-| | TanStack Query | 5.90.2 | Server state |
-| | TanStack React Query DevTools | 5.90.2 | Query debugging |
-| **Backend** | Convex | 1.28.2 | Backend-as-a-Service |
-| | @convex-dev/auth | 0.0.90 | Authentication |
-| | @convex-dev/polar | 0.0.21 | Payment processing |
-| | Polar | 1.72.0 | Payment platform |
-| | @auth/core | 0.37.0 | Authentication core |
-| **Development** | @types/node | 24.6.0 | Node.js type definitions |
-| | @types/react | 19.1.16 | React type definitions |
-| | @types/react-dom | 19.1.9 | React DOM type definitions |
-| | @vitejs/plugin-react | 5.0.4 | Vite React plugin |
-
-### Theme System
-
-The template includes a comprehensive theming system with:
-
-- **Semantic Design Tokens** - CSS custom properties for consistent styling
-- **Dark/Light Mode** - Persistent theme switching with Zustand
-- **Responsive Design** - Mobile-first approach with Tailwind utilities
-
-```css
-:root {
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(240 10% 3.9%);
-  --color-primary: hsl(240 5.9% 10%);
-}
-
-:root.dark {
-  --color-background: hsl(240 10% 3.9%);
-  --color-foreground: hsl(0 0% 98%);
-  --color-primary: hsl(0 0% 98%);
-}
-```
-
-## 🔧 Development Guide
-
-### Environment Setup
-
-1. **Copy environment template:**
-   ```bash
-   cp .env .env.local
-   ```
-
-2. **Configure required variables:**
-   - `CONVEX_DEPLOYMENT` - Production Convex deployment URL
-   - `VITE_CONVEX_URL` - Local Convex development URL
-   - `GOOGLE_CLIENT_ID/SECRET` - Google OAuth credentials
-   - `GITHUB_CLIENT_ID/SECRET` - GitHub OAuth credentials
-   - `JWT_PRIVATE_KEY` - Private key for JWT authentication
-   - `JWKS` - JSON Web Key Set for JWT verification
-   - `POLAR_ORGANIZATION_TOKEN` - Polar organization API token
-   - `POLAR_WEBHOOK_SECRET` - Polar webhook secret for payment events
-   - `POLAR_SERVER` - Polar server environment (sandbox/production)
-   - `POLAR_SUCCESS_URL` - URL to redirect after successful payment
-   - `VITE_CHECKOUT_LINK_*` - Polar checkout links for pricing tiers
-
-### Development Commands
-
-```bash
-# Start development server
-npm run dev
-
-# Build for production (runs TypeScript check then Vite build)
-npm run build
-
-# Preview production build
-npm run preview
-
-# Start Convex backend (separate terminal)
-npx convex dev
-```
-
-### Coding Standards
-
-#### Naming Conventions
-
-- **Components/Hooks:** PascalCase (`UserProfile.tsx`, `useUserData.ts`)
-- **Files:** PascalCase for components, camelCase for utilities
-- **Stores:** End with `Store.ts` (`useAppStore.ts`)
-- **Pages:** Follow `<Feature>Page.tsx` pattern
-
-#### Code Style
-
-- **Indentation:** 2 spaces
-- **TypeScript:** Strict mode enabled, no implicit `any`
-- **Components:** Functional components with hooks
-- **Styling:** Tailwind utility classes preferred
-
-#### Component Patterns
-
-**Authentication:**
-```tsx
-<Authenticated>
-  <UserProfileHeader />
-</Authenticated>
-<Unauthenticated>
-  <SignIn />
-</Unauthenticated>
-```
-
-**Premium Feature Gating:**
-```tsx
-<PremiumGate fallback={<UpgradePrompt />}>
-  <PremiumAnalytics />
-</PremiumGate>
-```
-
-**Pricing Display:**
-```tsx
-<PriceCard
-  product={product}
-  action={<CheckoutButton product={product} />}
-/>
-```
-
-**Data Fetching:**
-```tsx
-const currentUser = useQuery(api.users.getCurrentUser);
-const { signIn, signOut } = useAuthActions();
-const { isPremium, isLifetime } = useBillingStatus();
-```
+- `npx convex dev` - Start Convex development server
+- `npx convex deploy` - Deploy Convex functions
+- `npx convex dashboard` - Open Convex dashboard
 
 ## 🔐 Authentication
 
@@ -259,20 +189,6 @@ Follow these steps to configure OAuth providers for your application:
    - **Authorization callback URL**: `https://<your-convex-deployment>.convex.site/api/auth/callback/github`
 4. After creating the app, click "Generate a new client secret"
 5. Copy the Client ID and Client Secret to your environment variables
-
-### Adding New Providers
-
-1. Update [`convex/auth.config.ts`](convex/auth.config.ts) with provider configuration
-2. Add environment variables for client ID/secret
-3. Configure OAuth app in the provider's developer console
-
-### User Data Structure
-
-Users are stored with the following information:
-- Profile image and name
-- Email address
-- Authentication provider
-- Account creation and last login timestamps
 
 ### Premium Feature Gating
 
@@ -308,58 +224,3 @@ This template follows a **minimal local storage approach** for payment and custo
 3. **Security Compliance**: Sensitive payment data remains with Polar, reducing compliance burden
 4. **Maintenance Simplicity**: Fewer database schemas and migration requirements
 5. **Real-time Accuracy**: Always serves the most current subscription status
-
-## 📊 Database Schema
-
-The Convex schema is defined in [`convex/schema.ts`](convex/schema.ts) and includes:
-
-```typescript
-// Authentication tables (auto-generated)
-export default defineSchema({
-  // Add your custom tables here
-  
-  // Example:
-  // posts: defineTable({
-  //   title: v.string(),
-  //   content: v.string(),
-  //   authorId: v.id("users"),
-  //   createdAt: v.number(),
-  // })
-    .index("by_author", ["authorId"]),
-});
-```
-
-## 🎨 Styling Guide
-
-### Tailwind CSS v4
-
-The template uses Tailwind CSS v4 with custom design tokens:
-
-```tsx
-// Use semantic tokens for consistent theming
-<div className="bg-background text-foreground border-border">
-  <h1 className="text-2xl font-bold text-primary">
-    Hello World
-  </h1>
-</div>
-```
-
-### Theme Implementation
-
-- **CSS Variables:** Defined in [`src/theme.css`](src/theme.css)
-- **State Management:** Theme state in [`src/stores/useAppStore.ts`](src/stores/useAppStore.ts)
-- **Application:** Applied via `data-theme` attribute and `.dark` class
-
-### Getting Help
-
-- Check the [Convex Documentation](https://docs.convex.dev/)
-- Review the [Vite Guide](https://vitejs.dev/guide/)
-- Consult the [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-
-## 📝 License
-
-This template is provided as-is for educational and commercial use. Please refer to the licenses of individual packages for specific terms.
-
----
-
-**Built with ❤️ using React, Vite, Tailwind CSS, and Convex**

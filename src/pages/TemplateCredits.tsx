@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useAction } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { useBillingStatus } from "../hooks/useBillingStatus";
 import { Button } from "../components/ui/button";
 import {
@@ -17,6 +19,7 @@ import { Check, CheckCircle, AlertTriangle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
 
 // Credit packages configuration - customize these for your needs
+// Add your Polar product IDs in .env.local as VITE_POLAR_PRODUCT_ID_CREDITS_*
 const creditPackages = [
     {
         id: "credits-100",
@@ -25,7 +28,7 @@ const creditPackages = [
         price: 999, // Price in cents
         currency: "USD",
         description: "Perfect for trying out credits",
-        checkoutUrl: "", // Add your Polar checkout URL here
+        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS_100 as string | undefined,
         features: [
             "100 Credits",
             "Never expires",
@@ -40,7 +43,7 @@ const creditPackages = [
         price: 2499, // Price in cents
         currency: "USD",
         description: "Best value for regular users",
-        checkoutUrl: "", // Add your Polar checkout URL here
+        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS_300 as string | undefined,
         features: [
             "300 Credits",
             "Save 17%",
@@ -56,7 +59,7 @@ const creditPackages = [
         price: 6999, // Price in cents
         currency: "USD",
         description: "For power users and teams",
-        checkoutUrl: "", // Add your Polar checkout URL here
+        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS_1000 as string | undefined,
         features: [
             "1000 Credits",
             "Save 30%",
@@ -72,6 +75,8 @@ export const CreditsPage = () => {
     const location = useLocation();
     const billing = useBillingStatus();
     const { refresh: refreshBilling } = billing;
+    const createCheckoutSession = useAction(api.polar.createCheckoutSession);
+    const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
     const billingReady = billing.status === "ready";
 
@@ -85,28 +90,6 @@ export const CreditsPage = () => {
         void refreshBilling();
     }, [refreshBilling, showSuccess]);
 
-    const addPrefillParams = (
-        url: string,
-        email?: string | null,
-        name?: string | null
-    ) => {
-        if (!email || !url) {
-            return url;
-        }
-
-        try {
-            const parsed = new URL(url);
-            parsed.searchParams.set("customer_email", email);
-            if (name) {
-                parsed.searchParams.set("customer_name", name);
-            }
-            return parsed.toString();
-        } catch (error) {
-            console.error("Failed to prefill checkout link", error);
-            return url;
-        }
-    };
-
     const formatPrice = (amount: number | undefined, currency: string = "USD") => {
         if (amount === undefined) return "N/A";
         return new Intl.NumberFormat("en-US", {
@@ -116,33 +99,55 @@ export const CreditsPage = () => {
         }).format(amount / 100);
     };
 
+    const handleCheckout = async (polarProductId: string) => {
+        setLoadingProductId(polarProductId);
+        try {
+            const result = await createCheckoutSession({
+                productId: polarProductId,
+                successUrl: `${window.location.origin}/credits?checkout_id={CHECKOUT_ID}`,
+            });
+            if ("url" in result) {
+                window.location.href = result.url;
+            } else {
+                console.error("Checkout error:", result.error);
+            }
+        } catch (error) {
+            console.error("Failed to create checkout session:", error);
+        } finally {
+            setLoadingProductId(null);
+        }
+    };
+
     const renderCheckoutCta = (
         creditPackage: typeof creditPackages[0],
         label: string,
         variant: "default" | "outline" | "ghost" | "secondary" = "default"
     ) => {
-        if (!creditPackage.checkoutUrl) {
+        if (!creditPackage.polarProductId) {
             return (
                 <Alert variant="destructive" className="mt-4">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                        Missing checkout URL.
+                        Missing product ID.
                     </AlertDescription>
                 </Alert>
             );
         }
 
-        const checkoutHref = addPrefillParams(
-            creditPackage.checkoutUrl,
-            billing.data?.email,
-            billing.data?.name ?? null
-        );
+        const isLoading = loadingProductId === creditPackage.polarProductId;
 
         return (
-            <Button className="w-full" asChild variant={variant}>
-                <a href={checkoutHref}>
-                    {label}
-                </a>
+            <Button
+                className="w-full"
+                variant={variant}
+                disabled={isLoading}
+                onClick={() => handleCheckout(creditPackage.polarProductId!)}
+            >
+                {isLoading ? (
+                    <Skeleton className="h-4 w-20" />
+                ) : (
+                    label
+                )}
             </Button>
         );
     };
@@ -200,7 +205,7 @@ export const CreditsPage = () => {
                         renderLoadingButton()
                     ) : !billing.data ? (
                         renderSignInButton()
-                    ) : creditPackage.checkoutUrl ? (
+                    ) : creditPackage.polarProductId ? (
                         renderCheckoutCta(creditPackage, `Buy ${creditPackage.credits} Credits`, isPopular ? "default" : "outline")
                     ) : (
                         <Button disabled variant="secondary" className="w-full">

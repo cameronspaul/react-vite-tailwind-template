@@ -2,11 +2,13 @@ import { Polar } from "@convex-dev/polar";
 import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState";
 import { ordersList } from "@polar-sh/sdk/funcs/ordersList";
 import { customersList } from "@polar-sh/sdk/funcs/customersList";
+import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate";
 import type { CustomerState } from "@polar-sh/sdk/models/components/customerstate";
 import { api, components } from "./_generated/api";
 import { action, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
+import { v } from "convex/values";
 
 const fetchAuthenticatedUser = async (
   ctx: any
@@ -231,5 +233,46 @@ export const getBillingStatus = action({
       isLifetime: hasLifetime,
       hasSubscription: normalizedHasSubscription,
     };
+  },
+});
+
+// Create a Polar checkout session using the Checkout API
+export const createCheckoutSession = action({
+  args: {
+    productId: v.string(),
+    successUrl: v.optional(v.string()),
+  },
+  handler: async (ctx, { productId, successUrl }): Promise<{ url: string } | { error: string }> => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return { error: "User not authenticated" };
+    }
+
+    const user = await ctx.runQuery(api.users.getUserById, { userId });
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    // Backfill customer if they already exist in Polar by email
+    await backfillExistingCustomer(ctx, userId, user.email);
+
+    try {
+      const result = await checkoutsCreate(polar.polar, {
+        products: [productId],
+        customerEmail: user.email ?? undefined,
+        customerName: user.name ?? undefined,
+        successUrl: successUrl ?? `${process.env.SITE_URL ?? "http://localhost:5173"}/pricing?checkout_id={CHECKOUT_ID}`,
+      });
+
+      if (!result.ok) {
+        console.error("Failed to create checkout session:", result.error);
+        return { error: "Failed to create checkout session" };
+      }
+
+      return { url: result.value.url };
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      return { error: "Failed to create checkout session" };
+    }
   },
 });

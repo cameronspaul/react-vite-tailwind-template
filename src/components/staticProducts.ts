@@ -1,13 +1,16 @@
 import type { Product } from "./PriceCard";
 
-export type ProductWithCheckout = Product & { checkoutUrl?: string };
+export type ProductWithCheckout = Product & {
+  checkoutUrl?: string;
+  polarProductId?: string;
+};
 
-const checkoutLinks = {
-  weekly: import.meta.env.VITE_CHECKOUT_LINK_WEEKLY as string | undefined,
-  monthly: import.meta.env.VITE_CHECKOUT_LINK_MONTHLY as string | undefined,
-  quarterly: import.meta.env.VITE_CHECKOUT_LINK_QUARTERLY as string | undefined,
-  semiannual: import.meta.env.VITE_CHECKOUT_LINK_SEMIANNUAL as string | undefined,
-  lifetime: import.meta.env.VITE_CHECKOUT_LINK_LIFETIME as string | undefined,
+// Product IDs for Polar Checkout API
+const productIds = {
+  monthly: import.meta.env.VITE_POLAR_PRODUCT_ID_MONTHLY as string | undefined,
+  quarterly: import.meta.env.VITE_POLAR_PRODUCT_ID_QUARTERLY as string | undefined,
+  semiannual: import.meta.env.VITE_POLAR_PRODUCT_ID_SEMIANNUAL as string | undefined,
+  lifetime: import.meta.env.VITE_POLAR_PRODUCT_ID_LIFETIME as string | undefined,
 };
 
 const buildPrice = (
@@ -28,21 +31,6 @@ const buildPrice = (
 
 export const staticProducts: ProductWithCheckout[] = [
   {
-    id: "premium-weekly",
-    name: "Premium Weekly",
-    description: "Flexible weekly billing for short-term use.",
-    isRecurring: true,
-    recurringInterval: "week",
-    medias: [],
-    metadata: {},
-    organizationId: "static",
-    createdAt: "static",
-    modifiedAt: null,
-    isArchived: false,
-    prices: [buildPrice("premium-weekly", 999, "USD", "week")],
-    checkoutUrl: checkoutLinks.weekly,
-  },
-  {
     id: "premium-monthly",
     name: "Premium Monthly",
     description: "Standard monthly subscription with full access.",
@@ -55,7 +43,7 @@ export const staticProducts: ProductWithCheckout[] = [
     modifiedAt: null,
     isArchived: false,
     prices: [buildPrice("premium-monthly", 2999, "USD", "month")],
-    checkoutUrl: checkoutLinks.monthly,
+    polarProductId: productIds.monthly,
   },
   {
     id: "premium-quarterly",
@@ -70,7 +58,7 @@ export const staticProducts: ProductWithCheckout[] = [
     modifiedAt: null,
     isArchived: false,
     prices: [buildPrice("premium-quarterly", 7999, "USD", "quarter")],
-    checkoutUrl: checkoutLinks.quarterly,
+    polarProductId: productIds.quarterly,
   },
   {
     id: "premium-semiannual",
@@ -85,7 +73,7 @@ export const staticProducts: ProductWithCheckout[] = [
     modifiedAt: null,
     isArchived: false,
     prices: [buildPrice("premium-semiannual", 14999, "USD", "6 months")],
-    checkoutUrl: checkoutLinks.semiannual,
+    polarProductId: productIds.semiannual,
   },
   {
     id: "premium-lifetime",
@@ -100,6 +88,6 @@ export const staticProducts: ProductWithCheckout[] = [
     modifiedAt: null,
     isArchived: false,
     prices: [buildPrice("premium-lifetime", 5900, "USD", null)],
-    checkoutUrl: checkoutLinks.lifetime,
+    polarProductId: productIds.lifetime,
   },
 ];

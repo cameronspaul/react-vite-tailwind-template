@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { CustomerPortalLink } from "@convex-dev/polar/react";
+import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { staticProducts, type ProductWithCheckout } from "../components/staticProducts";
 import { useBillingStatus } from "../hooks/useBillingStatus";
@@ -23,6 +24,8 @@ export const ProductList = () => {
   const location = useLocation();
   const billing = useBillingStatus();
   const { refresh: refreshBilling } = billing;
+  const createCheckoutSession = useAction(api.polar.createCheckoutSession);
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
   const billingReady = billing.status === "ready";
   const hasLifetime = billingReady && billing.isLifetime;
@@ -49,28 +52,6 @@ export const ProductList = () => {
     void refreshBilling();
   }, [refreshBilling, showSuccess]);
 
-  const addPrefillParams = (
-    url: string,
-    email?: string | null,
-    name?: string | null
-  ) => {
-    if (!email) {
-      return url;
-    }
-
-    try {
-      const parsed = new URL(url);
-      parsed.searchParams.set("customer_email", email);
-      if (name) {
-        parsed.searchParams.set("customer_name", name);
-      }
-      return parsed.toString();
-    } catch (error) {
-      console.error("Failed to prefill checkout link", error);
-      return url;
-    }
-  };
-
   const formatPrice = (amount: number | undefined, currency: string = "USD") => {
     if (amount === undefined) return "N/A";
     return new Intl.NumberFormat("en-US", {
@@ -80,33 +61,52 @@ export const ProductList = () => {
     }).format(amount / 100);
   };
 
+  const handleCheckout = async (polarProductId: string) => {
+    setLoadingProductId(polarProductId);
+    try {
+      const result = await createCheckoutSession({ productId: polarProductId });
+      if ("url" in result) {
+        window.location.href = result.url;
+      } else {
+        console.error("Checkout error:", result.error);
+      }
+    } catch (error) {
+      console.error("Failed to create checkout session:", error);
+    } finally {
+      setLoadingProductId(null);
+    }
+  };
+
   const renderCheckoutCta = (
     product: ProductWithCheckout,
     label: string,
     variant: "default" | "outline" | "ghost" | "secondary" = "default"
   ) => {
-    if (!product.checkoutUrl) {
+    if (!product.polarProductId) {
       return (
         <Alert variant="destructive" className="mt-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Missing checkout URL.
+            Missing product ID.
           </AlertDescription>
         </Alert>
       );
     }
 
-    const checkoutHref = addPrefillParams(
-      product.checkoutUrl,
-      billing.data?.email,
-      billing.data?.name ?? null
-    );
+    const isLoading = loadingProductId === product.polarProductId;
 
     return (
-      <Button className="w-full" asChild variant={variant}>
-        <a href={checkoutHref}>
-          {label}
-        </a>
+      <Button
+        className="w-full"
+        variant={variant}
+        disabled={isLoading}
+        onClick={() => handleCheckout(product.polarProductId!)}
+      >
+        {isLoading ? (
+          <Skeleton className="h-4 w-20" />
+        ) : (
+          label
+        )}
       </Button>
     );
   };

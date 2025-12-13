@@ -99,14 +99,20 @@ http.route({
               }
               break;
 
-            // Credit/Boost products
-            case process.env.VITE_POLAR_PRODUCT_ID_SUPER_CONNECT:
-              console.log("User bought Super Connect");
-              emailType = "super_connect";
+            // Credit Bundle products (custom-priced)
+            case process.env.VITE_POLAR_PRODUCT_ID_CREDITS:
+              console.log("User bought Credit Bundle");
+              emailType = "credit_bundle";
               break;
+
             default:
               console.log("User bought unknown product");
           }
+
+          // Extract credit bundle metadata if available (passed during checkout)
+          const orderMetadata = event.data.metadata || {};
+          const creditsCount = orderMetadata.credits ? Number(orderMetadata.credits) : undefined;
+          const bundleName = orderMetadata.bundle_name || undefined;
 
           // Send purchase confirmation email
           if (customerEmail) {
@@ -119,6 +125,9 @@ http.route({
                 amount: amount,
                 currency: currency,
                 orderId: orderId,
+                // Include credit bundle info if available
+                credits: creditsCount,
+                bundleName: bundleName,
               });
               console.log(`Purchase confirmation email sent to ${customerEmail}`);
             } catch (emailError) {

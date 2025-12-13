@@ -239,12 +239,18 @@ export const getBillingStatus = action({
 });
 
 // Create a Polar checkout session using the Checkout API
+// Supports custom pricing via the `amount` parameter (in cents) for products with custom price types
 export const createCheckoutSession = action({
   args: {
     productId: v.string(),
     successUrl: v.optional(v.string()),
+    // Amount in cents - used for custom-priced products like credit bundles
+    // Only works if the Polar product has a "custom" price type
+    amount: v.optional(v.number()),
+    // Optional metadata to include with the checkout (will be copied to the order)
+    metadata: v.optional(v.record(v.string(), v.union(v.string(), v.number(), v.boolean()))),
   },
-  handler: async (ctx, { productId, successUrl }): Promise<{ url: string } | { error: string }> => {
+  handler: async (ctx, { productId, successUrl, amount, metadata }): Promise<{ url: string } | { error: string }> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       return { error: "User not authenticated" };
@@ -259,12 +265,24 @@ export const createCheckoutSession = action({
     await backfillExistingCustomer(ctx, userId, user.email);
 
     try {
-      const result = await checkoutsCreate(polar.polar, {
+      const checkoutParams: Parameters<typeof checkoutsCreate>[1] = {
         products: [productId],
         customerEmail: user.email ?? undefined,
         customerName: user.name ?? undefined,
         successUrl: successUrl ?? `${process.env.SITE_URL ?? "http://localhost:5173"}/pricing?checkout_id={CHECKOUT_ID}`,
-      });
+      };
+
+      // Add custom amount if provided (for custom-priced products)
+      if (amount !== undefined) {
+        checkoutParams.amount = amount;
+      }
+
+      // Add metadata if provided
+      if (metadata !== undefined) {
+        checkoutParams.metadata = metadata;
+      }
+
+      const result = await checkoutsCreate(polar.polar, checkoutParams);
 
       if (!result.ok) {
         console.error("Failed to create checkout session:", result.error);

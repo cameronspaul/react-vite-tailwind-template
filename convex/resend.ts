@@ -13,6 +13,7 @@ import {
     type EmailType,
     type WelcomeEmailParams,
     type PurchaseEmailParams,
+    type CreditBundleEmailParams,
 } from "./emailTemplates";
 
 // Initialize Resend with API key from environment
@@ -84,12 +85,16 @@ export const sendPurchaseEmail = internalAction({
         amount: v.string(),
         currency: v.string(),
         orderId: v.optional(v.string()),
+        // Credit bundle specific fields
+        credits: v.optional(v.number()),
+        bundleName: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
         const resend = getResendClient();
         const fromEmail = getFromEmail();
 
-        const params: PurchaseEmailParams = {
+        // Build params - include credits info for credit bundle emails
+        const params: PurchaseEmailParams | CreditBundleEmailParams = {
             userName: args.userName,
             email: args.to,
             productName: args.productName,
@@ -102,6 +107,9 @@ export const sendPurchaseEmail = internalAction({
                 month: "long",
                 day: "numeric",
             }),
+            // Credit bundle specific fields
+            credits: args.credits,
+            bundleName: args.bundleName,
         };
 
         const emailType = args.emailType as EmailType;

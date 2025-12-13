@@ -19,19 +19,57 @@ import { Check, CheckCircle, AlertTriangle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
 
 // Credit packages configuration - customize these for your needs
-// Add your Polar product IDs in .env.local as VITE_POLAR_PRODUCT_ID_CREDITS_*
+// All bundles use the same Polar product ID with "custom" price type
+// The actual price is set dynamically at checkout via the `amount` parameter
+// Add your Polar product ID in .env.local as VITE_POLAR_PRODUCT_ID_CREDITS
+const CREDITS_PRODUCT_ID = import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS as string | undefined;
+
 const creditPackages = [
     {
-        id: "super-connect",
-        name: "Super Connect",
-        credits: 1,
-        price: 499, // Price in cents
+        id: "credits-100",
+        name: "Starter Pack",
+        credits: 100,
+        price: 999, // Price in cents ($9.99)
+        currency: "USD",
+        description: "Perfect for trying things out",
+        polarProductId: CREDITS_PRODUCT_ID,
+        features: [
+            "100 Credits",
+            "~$0.10 per credit",
+            "Never expires",
+        ],
+        popular: false,
+    },
+    {
+        id: "credits-300",
+        name: "Pro Pack",
+        credits: 300,
+        price: 2499, // Price in cents ($24.99)
+        currency: "USD",
+        description: "Best value for regular users",
+        polarProductId: CREDITS_PRODUCT_ID,
+        features: [
+            "300 Credits",
+            "~$0.08 per credit",
+            "Save 17%",
+            "Never expires",
+        ],
+        popular: true,
+    },
+    {
+        id: "credits-1000",
+        name: "Power Pack",
+        credits: 1000,
+        price: 6999, // Price in cents ($69.99)
         currency: "USD",
         description: "For power users and teams",
-        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_SUPER_CONNECT as string | undefined,
+        polarProductId: CREDITS_PRODUCT_ID,
         features: [
-            "1 Credits",
+            "1000 Credits",
+            "~$0.07 per credit",
+            "Save 30%",
             "Never expires",
+            "Priority support",
         ],
         popular: false,
     },
@@ -65,12 +103,23 @@ export const CreditsPage = () => {
         }).format(amount / 100);
     };
 
-    const handleCheckout = async (polarProductId: string) => {
-        setLoadingProductId(polarProductId);
+    // Handle checkout with custom amount for credit bundles
+    const handleCheckout = async (creditPackage: typeof creditPackages[0]) => {
+        if (!creditPackage.polarProductId) return;
+
+        setLoadingProductId(creditPackage.id); // Track by bundle id since all use same product
         try {
             const result = await createCheckoutSession({
-                productId: polarProductId,
+                productId: creditPackage.polarProductId,
                 successUrl: `${window.location.origin}/credits?checkout_id={CHECKOUT_ID}`,
+                // Set custom price for the bundle (in cents)
+                amount: creditPackage.price,
+                // Include bundle info in metadata for order tracking
+                metadata: {
+                    bundle_id: creditPackage.id,
+                    credits: creditPackage.credits,
+                    bundle_name: creditPackage.name,
+                },
             });
             if ("url" in result) {
                 window.location.href = result.url;
@@ -100,14 +149,15 @@ export const CreditsPage = () => {
             );
         }
 
-        const isLoading = loadingProductId === creditPackage.polarProductId;
+        // Track loading by bundle id since all bundles share the same product id
+        const isLoading = loadingProductId === creditPackage.id;
 
         return (
             <Button
                 className="w-full"
                 variant={variant}
-                disabled={isLoading}
-                onClick={() => handleCheckout(creditPackage.polarProductId!)}
+                disabled={isLoading || loadingProductId !== null}
+                onClick={() => handleCheckout(creditPackage)}
             >
                 {isLoading ? (
                     <Skeleton className="h-4 w-20" />
@@ -232,10 +282,6 @@ export const CreditsPage = () => {
                             <li className="flex items-center gap-2">
                                 <Check className="h-4 w-4 text-primary" />
                                 <span>Instant delivery to your account</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Spend credits on premium features and actions</span>
                             </li>
                         </ul>
                     </CardContent>

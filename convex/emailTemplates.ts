@@ -17,18 +17,18 @@
  * - primary: oklch(0.922 0 0) → #e5e5e5
  */
 const BRAND = {
-    name: "Your App Name",
-    website: "https://yourapp.com",
-    supportEmail: "support@yourapp.com",
-    logo: "https://yourapp.com/logo.png", // Replace with your logo URL
-    // Colors aligned with shadcn dark theme
-    primaryColor: "#e5e5e5", // Dark theme primary (light gray for dark backgrounds)
-    accentColor: "#d4d4d4", // Secondary accent  
-    backgroundColor: "#1a1a1a", // Dark theme background
-    cardBackground: "#262626", // Dark theme card
-    textColor: "#fafafa", // Dark theme foreground
-    mutedColor: "#a3a3a3", // Dark theme muted-foreground
-    borderColor: "rgba(255, 255, 255, 0.1)", // Dark theme border
+  name: "Your App Name",
+  website: "https://yourapp.com",
+  supportEmail: "support@yourapp.com",
+  logo: "https://yourapp.com/logo.png", // Replace with your logo URL
+  // Colors aligned with shadcn dark theme
+  primaryColor: "#e5e5e5", // Dark theme primary (light gray for dark backgrounds)
+  accentColor: "#d4d4d4", // Secondary accent  
+  backgroundColor: "#1a1a1a", // Dark theme background
+  cardBackground: "#262626", // Dark theme card
+  textColor: "#fafafa", // Dark theme foreground
+  mutedColor: "#a3a3a3", // Dark theme muted-foreground
+  borderColor: "rgba(255, 255, 255, 0.1)", // Dark theme border
 };
 
 // Base email styles
@@ -181,7 +181,7 @@ const baseStyles = `
 
 // Helper to wrap content in base layout
 function wrapInLayout(content: string, previewText: string = ""): string {
-    return `
+  return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -228,18 +228,18 @@ function wrapInLayout(content: string, previewText: string = ""): string {
 // WELCOME EMAIL
 // ============================================
 export interface WelcomeEmailParams {
-    userName: string;
-    email: string;
+  userName: string;
+  email: string;
 }
 
 export function getWelcomeEmailSubject(): string {
-    return `Welcome to ${BRAND.name}!`;
+  return `Welcome to ${BRAND.name}!`;
 }
 
 export function getWelcomeEmailHtml(params: WelcomeEmailParams): string {
-    const { userName } = params;
+  const { userName } = params;
 
-    const content = `
+  const content = `
 
     <h1>Welcome to ${BRAND.name}!</h1>
     <p style="text-align: center; font-size: 18px;">
@@ -278,32 +278,32 @@ export function getWelcomeEmailHtml(params: WelcomeEmailParams): string {
     </p>
   `;
 
-    return wrapInLayout(content, `Welcome to ${BRAND.name}! We're excited to have you.`);
+  return wrapInLayout(content, `Welcome to ${BRAND.name}! We're excited to have you.`);
 }
 
 // ============================================
 // PURCHASE CONFIRMATION EMAILS
 // ============================================
 export interface PurchaseEmailParams {
-    userName: string;
-    email: string;
-    productName: string;
-    productDescription?: string;
-    amount: string;
-    currency: string;
-    orderId?: string;
-    purchaseDate?: string;
+  userName: string;
+  email: string;
+  productName: string;
+  productDescription?: string;
+  amount: string;
+  currency: string;
+  orderId?: string;
+  purchaseDate?: string;
 }
 
 // --- Premium Monthly ---
 export function getPremiumMonthlyEmailSubject(): string {
-    return `Welcome to Premium!`;
+  return `Welcome to Premium!`;
 }
 
 export function getPremiumMonthlyEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
 
-    const content = `
+  const content = `
     <h1>Welcome to Premium!</h1>
     <p style="text-align: center; font-size: 18px;">
       Hi <span class="highlight">${userName || "there"}</span>, your monthly subscription is now active!
@@ -359,18 +359,18 @@ export function getPremiumMonthlyEmailHtml(params: PurchaseEmailParams): string 
     </div>
   `;
 
-    return wrapInLayout(content, "Your Premium subscription is now active!");
+  return wrapInLayout(content, "Your Premium subscription is now active!");
 }
 
 // --- Premium Quarterly ---
 export function getPremiumQuarterlyEmailSubject(): string {
-    return `Welcome to Premium Quarterly!`;
+  return `Welcome to Premium Quarterly!`;
 }
 
 export function getPremiumQuarterlyEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
 
-    const content = `
+  const content = `
     <h1>Welcome to Premium!</h1>
     <p style="text-align: center; font-size: 18px;">
       Hi <span class="highlight">${userName || "there"}</span>, your quarterly subscription is now active!
@@ -426,18 +426,18 @@ export function getPremiumQuarterlyEmailHtml(params: PurchaseEmailParams): strin
     </div>
   `;
 
-    return wrapInLayout(content, "Your Premium Quarterly subscription is now active!");
+  return wrapInLayout(content, "Your Premium Quarterly subscription is now active!");
 }
 
 // --- Premium Semiannual ---
 export function getPremiumSemiannualEmailSubject(): string {
-    return `Welcome to Premium Semiannual!`;
+  return `Welcome to Premium Semiannual!`;
 }
 
 export function getPremiumSemiannualEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
 
-    const content = `
+  const content = `
     <h1>Welcome to Premium!</h1>
     <p style="text-align: center; font-size: 18px;">
       Hi <span class="highlight">${userName || "there"}</span>, your 6-month subscription is now active!
@@ -493,18 +493,18 @@ export function getPremiumSemiannualEmailHtml(params: PurchaseEmailParams): stri
     </div>
   `;
 
-    return wrapInLayout(content, "Your Premium Semiannual subscription is now active!");
+  return wrapInLayout(content, "Your Premium Semiannual subscription is now active!");
 }
 
 // --- Premium Lifetime ---
 export function getPremiumLifetimeEmailSubject(): string {
-    return `Welcome to Premium Lifetime!`;
+  return `Welcome to Premium Lifetime!`;
 }
 
 export function getPremiumLifetimeEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
 
-    const content = `
+  const content = `
     <h1>Welcome to Premium Forever!</h1>
     <p style="text-align: center; font-size: 18px;">
       Hi <span class="highlight">${userName || "there"}</span>, you now have lifetime access!
@@ -568,30 +568,39 @@ export function getPremiumLifetimeEmailHtml(params: PurchaseEmailParams): string
     </p>
   `;
 
-    return wrapInLayout(content, "Congratulations! You now have lifetime access!");
+  return wrapInLayout(content, "Congratulations! You now have lifetime access!");
 }
 
-
-
-// --- Super Connect Purchase ---
-export function getSuperConnectEmailSubject(): string {
-    return `Your Super Connect is Ready!`;
+// ============================================
+// CREDIT BUNDLE PURCHASE EMAIL
+// ============================================
+export interface CreditBundleEmailParams extends PurchaseEmailParams {
+  credits?: number;
+  bundleName?: string;
 }
 
-export function getSuperConnectEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+export function getCreditBundleEmailSubject(credits: number = 0): string {
+  return `Your ${credits} Credits Have Been Added!`;
+}
 
-    const content = `
-    <h1>Your Super Connect is Ready!</h1>
+export function getCreditBundleEmailHtml(params: CreditBundleEmailParams): string {
+  const { userName, productName, amount, currency, orderId, purchaseDate, credits, bundleName } = params;
+
+  const content = `
+    <h1>Credits Added to Your Account!</h1>
     <p style="text-align: center; font-size: 18px;">
-      Hi <span class="highlight">${userName || "there"}</span>, you can now send Super Connects!
+      Hi <span class="highlight">${userName || "there"}</span>, your credits have been added!
     </p>
     
     <div class="order-details">
       <table class="order-table">
         <tr>
-          <td>Product</td>
-          <td>${productName || "Super Connect"}</td>
+          <td>Bundle</td>
+          <td>${bundleName || productName || "Credit Bundle"}</td>
+        </tr>
+        <tr>
+          <td>Credits Added</td>
+          <td><strong>${credits || "N/A"} Credits</strong></td>
         </tr>
         <tr>
           <td>Amount Paid</td>
@@ -612,45 +621,45 @@ export function getSuperConnectEmailHtml(params: PurchaseEmailParams): string {
       </table>
     </div>
     
-    <h2>Super Connect Benefits:</h2>
+    <h2>How to Use Your Credits:</h2>
     <ul class="feature-list">
       <li class="feature-item">
         <span class="feature-icon">✓</span>
-        <span><strong>Stand out</strong> with Super Connects</span>
+        <span>Credits are available immediately in your account</span>
       </li>
       <li class="feature-item">
         <span class="feature-icon">✓</span>
-        <span>Priority inbox placement</span>
+        <span>Use credits for premium features and actions</span>
       </li>
       <li class="feature-item">
         <span class="feature-icon">✓</span>
-        <span>Special message highlighting</span>
+        <span>Your credits <strong>never expire</strong></span>
       </li>
       <li class="feature-item">
         <span class="feature-icon">✓</span>
-        <span>Instant notification to recipient</span>
+        <span>Check your balance anytime in your dashboard</span>
       </li>
     </ul>
     
     <div class="button-container">
-      <a href="${BRAND.website}" class="button">Start Connecting →</a>
+      <a href="${BRAND.website}" class="button">Go to Dashboard →</a>
     </div>
   `;
 
-    return wrapInLayout(content, "Your Super Connects are ready to use!");
+  return wrapInLayout(content, `${credits || "Your"} credits have been added to your account!`);
 }
 
 // ============================================
 // GENERIC PURCHASE EMAIL (Fallback)
 // ============================================
 export function getGenericPurchaseEmailSubject(productName: string): string {
-    return `Thank you for your purchase!`;
+  return `Thank you for your purchase!`;
 }
 
 export function getGenericPurchaseEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
 
-    const content = `
+  const content = `
     <h1>Thank You for Your Purchase!</h1>
     <p style="text-align: center; font-size: 18px;">
       Hi <span class="highlight">${userName || "there"}</span>, your purchase has been confirmed!
@@ -691,61 +700,62 @@ export function getGenericPurchaseEmailHtml(params: PurchaseEmailParams): string
     </div>
   `;
 
-    return wrapInLayout(content, "Your purchase has been confirmed!");
+  return wrapInLayout(content, "Your purchase has been confirmed!");
 }
 
 // ============================================
 // EXPORT ALL EMAIL TYPES
 // ============================================
 export type EmailType =
-    | "welcome"
-    | "premium_monthly"
-    | "premium_quarterly"
-    | "premium_semiannual"
-    | "premium_lifetime"
-    | "super_connect"
-    | "generic_purchase";
+  | "welcome"
+  | "premium_monthly"
+  | "premium_quarterly"
+  | "premium_semiannual"
+  | "premium_lifetime"
+  | "credit_bundle"
+  | "generic_purchase";
 
 export function getEmailContent(
-    type: EmailType,
-    params: WelcomeEmailParams | PurchaseEmailParams
+  type: EmailType,
+  params: WelcomeEmailParams | PurchaseEmailParams
 ): { subject: string; html: string } {
-    switch (type) {
-        case "welcome":
-            return {
-                subject: getWelcomeEmailSubject(),
-                html: getWelcomeEmailHtml(params as WelcomeEmailParams),
-            };
-        case "premium_monthly":
-            return {
-                subject: getPremiumMonthlyEmailSubject(),
-                html: getPremiumMonthlyEmailHtml(params as PurchaseEmailParams),
-            };
-        case "premium_quarterly":
-            return {
-                subject: getPremiumQuarterlyEmailSubject(),
-                html: getPremiumQuarterlyEmailHtml(params as PurchaseEmailParams),
-            };
-        case "premium_semiannual":
-            return {
-                subject: getPremiumSemiannualEmailSubject(),
-                html: getPremiumSemiannualEmailHtml(params as PurchaseEmailParams),
-            };
-        case "premium_lifetime":
-            return {
-                subject: getPremiumLifetimeEmailSubject(),
-                html: getPremiumLifetimeEmailHtml(params as PurchaseEmailParams),
-            };
-        case "super_connect":
-            return {
-                subject: getSuperConnectEmailSubject(),
-                html: getSuperConnectEmailHtml(params as PurchaseEmailParams),
-            };
-        case "generic_purchase":
-        default:
-            return {
-                subject: getGenericPurchaseEmailSubject((params as PurchaseEmailParams).productName),
-                html: getGenericPurchaseEmailHtml(params as PurchaseEmailParams),
-            };
-    }
+  switch (type) {
+    case "welcome":
+      return {
+        subject: getWelcomeEmailSubject(),
+        html: getWelcomeEmailHtml(params as WelcomeEmailParams),
+      };
+    case "premium_monthly":
+      return {
+        subject: getPremiumMonthlyEmailSubject(),
+        html: getPremiumMonthlyEmailHtml(params as PurchaseEmailParams),
+      };
+    case "premium_quarterly":
+      return {
+        subject: getPremiumQuarterlyEmailSubject(),
+        html: getPremiumQuarterlyEmailHtml(params as PurchaseEmailParams),
+      };
+    case "premium_semiannual":
+      return {
+        subject: getPremiumSemiannualEmailSubject(),
+        html: getPremiumSemiannualEmailHtml(params as PurchaseEmailParams),
+      };
+    case "premium_lifetime":
+      return {
+        subject: getPremiumLifetimeEmailSubject(),
+        html: getPremiumLifetimeEmailHtml(params as PurchaseEmailParams),
+      };
+    case "credit_bundle":
+      const creditParams = params as CreditBundleEmailParams;
+      return {
+        subject: getCreditBundleEmailSubject(creditParams.credits),
+        html: getCreditBundleEmailHtml(creditParams),
+      };
+    case "generic_purchase":
+    default:
+      return {
+        subject: getGenericPurchaseEmailSubject((params as PurchaseEmailParams).productName),
+        html: getGenericPurchaseEmailHtml(params as PurchaseEmailParams),
+      };
+  }
 }

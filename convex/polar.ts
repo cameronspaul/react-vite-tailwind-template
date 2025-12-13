@@ -3,9 +3,11 @@ import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState";
 import { ordersList } from "@polar-sh/sdk/funcs/ordersList";
 import { customersList } from "@polar-sh/sdk/funcs/customersList";
 import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate";
+import { subscriptionsList } from "@polar-sh/sdk/funcs/subscriptionsList";
+import { subscriptionsRevoke } from "@polar-sh/sdk/funcs/subscriptionsRevoke";
 import type { CustomerState } from "@polar-sh/sdk/models/components/customerstate";
 import { api, components } from "./_generated/api";
-import { action, query } from "./_generated/server";
+import { action, internalAction, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
@@ -273,6 +275,66 @@ export const createCheckoutSession = action({
     } catch (error) {
       console.error("Error creating checkout session:", error);
       return { error: "Failed to create checkout session" };
+    }
+  },
+});
+
+// Cancel ALL active subscriptions for a customer (used when lifetime is purchased)
+export const cancelAllSubscriptionsForCustomer = internalAction({
+  args: {
+    customerId: v.string(),
+  },
+  handler: async (ctx, { customerId }): Promise<{ cancelled: number; errors: string[] }> => {
+    const cancelled: string[] = [];
+    const errors: string[] = [];
+
+    try {
+      // Get all subscriptions for this customer
+      const [subsIterator] = await subscriptionsList(polar.polar, {
+        customerId: customerId,
+        active: true,
+        limit: 100,
+      }).$inspect();
+
+      for await (const page of subsIterator) {
+        if (!page.ok) {
+          console.error("Error fetching subscriptions page:", page.error);
+          errors.push(`Failed to fetch subscriptions: ${page.error}`);
+          continue;
+        }
+
+        for (const subscription of page.value.result.items) {
+          // Only cancel recurring subscriptions that are not already cancelled
+          if (
+            subscription.status === "active" &&
+            subscription.recurringInterval !== null // This means it's a recurring subscription
+          ) {
+            try {
+              const revokeResult = await subscriptionsRevoke(polar.polar, {
+                id: subscription.id,
+              });
+
+              if (revokeResult.ok) {
+                console.log(`Successfully cancelled subscription ${subscription.id}`);
+                cancelled.push(subscription.id);
+              } else {
+                console.error(`Failed to cancel subscription ${subscription.id}:`, revokeResult.error);
+                errors.push(`Failed to cancel ${subscription.id}: ${revokeResult.error}`);
+              }
+            } catch (revokeError) {
+              console.error(`Error revoking subscription ${subscription.id}:`, revokeError);
+              errors.push(`Error revoking ${subscription.id}: ${revokeError}`);
+            }
+          }
+        }
+      }
+
+      console.log(`Cancelled ${cancelled.length} subscriptions for customer ${customerId}`);
+      return { cancelled: cancelled.length, errors };
+    } catch (error) {
+      console.error("Error cancelling subscriptions for customer:", error);
+      errors.push(`Error: ${error}`);
+      return { cancelled: 0, errors };
     }
   },
 });

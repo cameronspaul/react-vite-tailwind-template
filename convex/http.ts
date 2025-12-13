@@ -46,6 +46,37 @@ http.route({
         // Order events
         case "order.paid":
           console.log("Order paid:", event.data);
+          const productId = event.data.product_id;
+          switch (productId) {
+            // Premium products
+            case process.env.VITE_POLAR_PRODUCT_ID_MONTHLY:
+              console.log("User bought Premium 1 Month");
+              break;
+            case process.env.VITE_POLAR_PRODUCT_ID_QUARTERLY:
+              console.log("User bought Premium Quarterly");
+              break;
+            case process.env.VITE_POLAR_PRODUCT_ID_SEMIANNUAL:
+              console.log("User bought Premium Semiannual");
+              break;
+
+            // Lifetime products
+            case process.env.VITE_POLAR_PRODUCT_ID_LIFETIME:
+              console.log("User bought Premium Lifetime");
+              break;
+
+            // Credit/Boost products
+            case process.env.VITE_POLAR_PRODUCT_ID_BOOST:
+              console.log("User bought Boost");
+              break;
+            case process.env.VITE_POLAR_PRODUCT_ID_SUPER_BOOST:
+              console.log("User bought Super Boost");
+              break;
+            case process.env.VITE_POLAR_PRODUCT_ID_SUPER_CONNECT:
+              console.log("User bought Super Connect");
+              break;
+            default:
+              console.log("User bought unknown product");
+          }
           // e.g., Grant access, send confirmation email
           break;
 

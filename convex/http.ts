@@ -58,8 +58,14 @@ http.route({
           const currency = event.data.currency?.toUpperCase() || "USD";
           const orderId = event.data.id;
 
+          // Extract credit bundle metadata if available (passed during checkout)
+          const orderMetadata = event.data.metadata || {};
+          const creditsCount = orderMetadata.credits ? Number(orderMetadata.credits) : undefined;
+          const bundleName = orderMetadata.bundle_name || undefined;
+
           // Determine email type based on product
           let emailType: EmailType = "generic_purchase";
+          let isCreditsBundle = false;
 
           switch (productId) {
             // Premium products
@@ -103,16 +109,38 @@ http.route({
             case process.env.VITE_POLAR_PRODUCT_ID_CREDITS:
               console.log("User bought Credit Bundle");
               emailType = "credit_bundle";
+              isCreditsBundle = true;
               break;
 
             default:
               console.log("User bought unknown product");
           }
 
-          // Extract credit bundle metadata if available (passed during checkout)
-          const orderMetadata = event.data.metadata || {};
-          const creditsCount = orderMetadata.credits ? Number(orderMetadata.credits) : undefined;
-          const bundleName = orderMetadata.bundle_name || undefined;
+          // Add credits to user's account if this is a credit bundle purchase
+          if (isCreditsBundle && customerEmail && creditsCount) {
+            try {
+              // Look up user by email
+              const userId = await ctx.runQuery(internal.users.getUserIdByEmail, {
+                email: customerEmail,
+              });
+
+              if (userId) {
+                // Add credits to the user's account
+                await ctx.runMutation(internal.credits.addCredits, {
+                  userId: userId,
+                  amount: creditsCount,
+                });
+                console.log(`Added ${creditsCount} credits to user ${userId}`);
+              } else {
+                console.error(`No user found with email ${customerEmail} for credit purchase`);
+              }
+            } catch (creditError) {
+              console.error("Failed to add credits:", creditError);
+              // Don't fail the webhook if credits fail - email will still be sent
+            }
+          } else if (isCreditsBundle) {
+            console.warn("Missing customer email or credits count for credit bundle purchase");
+          }
 
           // Send purchase confirmation email
           if (customerEmail) {

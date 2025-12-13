@@ -1,6 +1,18 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+
+// Internal query to get user ID by email (used by webhooks)
+export const getUserIdByEmail = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    return user?._id ?? null;
+  },
+});
 
 // Get the current authenticated user's profile
 export const getCurrentUser = query({

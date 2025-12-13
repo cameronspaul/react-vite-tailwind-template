@@ -19,7 +19,14 @@ const schema = defineSchema({
   })
     .index("email", ["email"])
     .index("by_provider", ["provider"]),
-  // Your other tables can be added here
+
+  // Credits table - stores user credit balances
+  credits: defineTable({
+    userId: v.id("users"),
+    balance: v.number(), // Current credit balance
+    lastUpdated: v.number(), // Timestamp of last update
+  })
+    .index("by_userId", ["userId"]),
 });
 
 export default schema;

@@ -571,135 +571,7 @@ export function getPremiumLifetimeEmailHtml(params: PurchaseEmailParams): string
     return wrapInLayout(content, "Congratulations! You now have lifetime access!");
 }
 
-// --- Boost Purchase ---
-export function getBoostEmailSubject(): string {
-    return `Your Boost is Ready!`;
-}
 
-export function getBoostEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
-
-    const content = `
-    <h1>Your Boost is Ready!</h1>
-    <p style="text-align: center; font-size: 18px;">
-      Hi <span class="highlight">${userName || "there"}</span>, your boost has been added to your account!
-    </p>
-    
-    <div class="order-details">
-      <table class="order-table">
-        <tr>
-          <td>Product</td>
-          <td>${productName || "Boost"}</td>
-        </tr>
-        <tr>
-          <td>Amount Paid</td>
-          <td>${currency} ${amount}</td>
-        </tr>
-        ${orderId ? `
-        <tr>
-          <td>Order ID</td>
-          <td>${orderId}</td>
-        </tr>
-        ` : ""}
-        ${purchaseDate ? `
-        <tr>
-          <td>Date</td>
-          <td>${purchaseDate}</td>
-        </tr>
-        ` : ""}
-      </table>
-    </div>
-    
-    <h2>What You Get:</h2>
-    <ul class="feature-list">
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span>Boost your profile visibility</span>
-      </li>
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span>Get more exposure</span>
-      </li>
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span>Stand out from the crowd</span>
-      </li>
-    </ul>
-    
-    <div class="button-container">
-      <a href="${BRAND.website}" class="button">Use Your Boost →</a>
-    </div>
-  `;
-
-    return wrapInLayout(content, "Your Boost has been added to your account!");
-}
-
-// --- Super Boost Purchase ---
-export function getSuperBoostEmailSubject(): string {
-    return `Your Super Boost is Ready!`;
-}
-
-export function getSuperBoostEmailHtml(params: PurchaseEmailParams): string {
-    const { userName, productName, amount, currency, orderId, purchaseDate } = params;
-
-    const content = `
-    <h1>Your Super Boost is Ready!</h1>
-    <p style="text-align: center; font-size: 18px;">
-      Hi <span class="highlight">${userName || "there"}</span>, your Super Boost is now active!
-    </p>
-    
-    <div class="order-details">
-      <table class="order-table">
-        <tr>
-          <td>Product</td>
-          <td>${productName || "Super Boost"}</td>
-        </tr>
-        <tr>
-          <td>Amount Paid</td>
-          <td>${currency} ${amount}</td>
-        </tr>
-        ${orderId ? `
-        <tr>
-          <td>Order ID</td>
-          <td>${orderId}</td>
-        </tr>
-        ` : ""}
-        ${purchaseDate ? `
-        <tr>
-          <td>Date</td>
-          <td>${purchaseDate}</td>
-        </tr>
-        ` : ""}
-      </table>
-    </div>
-    
-    <h2>Super Boost Benefits:</h2>
-    <ul class="feature-list">
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span><strong>Maximum visibility</strong> for your profile</span>
-      </li>
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span>Priority placement in search results</span>
-      </li>
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span>Extended boost duration</span>
-      </li>
-      <li class="feature-item">
-        <span class="feature-icon">✓</span>
-        <span>Premium profile badge</span>
-      </li>
-    </ul>
-    
-    <div class="button-container">
-      <a href="${BRAND.website}" class="button">See Your Boost →</a>
-    </div>
-  `;
-
-    return wrapInLayout(content, "Your Super Boost is now active!");
-}
 
 // --- Super Connect Purchase ---
 export function getSuperConnectEmailSubject(): string {
@@ -831,8 +703,6 @@ export type EmailType =
     | "premium_quarterly"
     | "premium_semiannual"
     | "premium_lifetime"
-    | "boost"
-    | "super_boost"
     | "super_connect"
     | "generic_purchase";
 
@@ -865,16 +735,6 @@ export function getEmailContent(
             return {
                 subject: getPremiumLifetimeEmailSubject(),
                 html: getPremiumLifetimeEmailHtml(params as PurchaseEmailParams),
-            };
-        case "boost":
-            return {
-                subject: getBoostEmailSubject(),
-                html: getBoostEmailHtml(params as PurchaseEmailParams),
-            };
-        case "super_boost":
-            return {
-                subject: getSuperBoostEmailSubject(),
-                html: getSuperBoostEmailHtml(params as PurchaseEmailParams),
             };
         case "super_connect":
             return {

@@ -100,14 +100,6 @@ http.route({
               break;
 
             // Credit/Boost products
-            case process.env.VITE_POLAR_PRODUCT_ID_BOOST:
-              console.log("User bought Boost");
-              emailType = "boost";
-              break;
-            case process.env.VITE_POLAR_PRODUCT_ID_SUPER_BOOST:
-              console.log("User bought Super Boost");
-              emailType = "super_boost";
-              break;
             case process.env.VITE_POLAR_PRODUCT_ID_SUPER_CONNECT:
               console.log("User bought Super Connect");
               emailType = "super_connect";

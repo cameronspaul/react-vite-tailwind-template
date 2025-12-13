@@ -22,50 +22,16 @@ import { Separator } from "../components/ui/separator";
 // Add your Polar product IDs in .env.local as VITE_POLAR_PRODUCT_ID_CREDITS_*
 const creditPackages = [
     {
-        id: "credits-100",
-        name: "Starter Pack",
-        credits: 100,
-        price: 999, // Price in cents
-        currency: "USD",
-        description: "Perfect for trying out credits",
-        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS_100 as string | undefined,
-        features: [
-            "100 Credits",
-            "Never expires",
-            "Use anytime",
-        ],
-        popular: false,
-    },
-    {
-        id: "credits-300",
-        name: "Value Pack",
-        credits: 300,
-        price: 2499, // Price in cents
-        currency: "USD",
-        description: "Best value for regular users",
-        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS_300 as string | undefined,
-        features: [
-            "300 Credits",
-            "Save 17%",
-            "Never expires",
-            "Priority support",
-        ],
-        popular: true,
-    },
-    {
-        id: "credits-1000",
-        name: "Pro Pack",
-        credits: 1000,
-        price: 6999, // Price in cents
+        id: "super-connect",
+        name: "Super Connect",
+        credits: 1,
+        price: 499, // Price in cents
         currency: "USD",
         description: "For power users and teams",
-        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS_1000 as string | undefined,
+        polarProductId: import.meta.env.VITE_POLAR_PRODUCT_ID_SUPER_CONNECT as string | undefined,
         features: [
-            "1000 Credits",
-            "Save 30%",
+            "1 Credits",
             "Never expires",
-            "Priority support",
-            "Exclusive features",
         ],
         popular: false,
     },

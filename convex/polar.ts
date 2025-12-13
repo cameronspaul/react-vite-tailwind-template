@@ -272,9 +272,20 @@ export const createCheckoutSession = action({
         successUrl: successUrl ?? `${process.env.SITE_URL ?? "http://localhost:5173"}/pricing?checkout_id={CHECKOUT_ID}`,
       };
 
-      // Add custom amount if provided (for custom-priced products)
+      // For custom-priced products (like credit bundles), use the prices parameter
+      // to define ad-hoc pricing with a fixed amount for this checkout session.
+      // The prices parameter is a Record mapping product IDs to arrays of price definitions.
       if (amount !== undefined) {
-        checkoutParams.amount = amount;
+        // Ad-hoc pricing: define a custom fixed price for this checkout
+        checkoutParams.prices = {
+          [productId]: [
+            {
+              amountType: "fixed" as const,
+              priceAmount: amount,
+              priceCurrency: "usd",
+            },
+          ],
+        };
       }
 
       // Add metadata if provided

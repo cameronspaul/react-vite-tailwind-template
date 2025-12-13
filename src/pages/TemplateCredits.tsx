@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useAction } from "convex/react";
+import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useBillingStatus } from "../hooks/useBillingStatus";
 import { Button } from "../components/ui/button";
@@ -15,6 +15,7 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
+
 import { Check, CheckCircle, AlertTriangle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
 
@@ -80,6 +81,7 @@ export const CreditsPage = () => {
     const billing = useBillingStatus();
     const { refresh: refreshBilling } = billing;
     const createCheckoutSession = useAction(api.polar.createCheckoutSession);
+    const balance = useQuery(api.credits.getBalance);
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
     const billingReady = billing.status === "ready";
@@ -239,6 +241,12 @@ export const CreditsPage = () => {
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                     Purchase Credits
                 </h1>
+                {balance !== undefined && balance !== null && (
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full text-foreground/80 font-medium">
+                        <CheckCircle className="h-4 w-4 text-primary" />
+                        Current Balance: {balance} Credits
+                    </div>
+                )}
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                     Credits can be used to unlock premium features and actions.
                     No hidden fees.

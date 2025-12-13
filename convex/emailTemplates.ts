@@ -152,16 +152,14 @@ const baseStyles = `
     width: 100%;
     border-collapse: collapse;
   }
-  .order-table tr {
-    border-bottom: 1px solid ${BRAND.borderColor};
-  }
-  .order-table tr:last-child {
-    border-bottom: none;
-  }
   .order-table td {
+    border-bottom: 1px solid ${BRAND.borderColor};
     padding: 12px 0;
     font-size: 14px;
     color: ${BRAND.textColor};
+  }
+  .order-table tr:last-child td {
+    border-bottom: none;
   }
   .order-table td:first-child {
     color: ${BRAND.mutedColor};
@@ -614,10 +612,10 @@ export function getCreditBundleEmailHtml(params: CreditBundleEmailParams): strin
         ` : ""}
         ${purchaseDate ? `
         <tr>
-          <td>Date</td>
-          <td>${purchaseDate}</td>
+          <td style="border-bottom: none;">Date</td>
+          <td style="border-bottom: none;">${purchaseDate}</td>
         </tr>
-        ` : ""}
+        ` : (orderId ? `` : ``)}
       </table>
     </div>
     

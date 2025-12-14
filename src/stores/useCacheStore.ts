@@ -13,6 +13,7 @@ interface CachedUser {
 interface CachedBilling {
     isPremium: boolean;
     isLifetime: boolean;
+    hasSubscription?: boolean;
     subscription?: { product?: { name?: string | null; isRecurring?: boolean } } | null;
 }
 

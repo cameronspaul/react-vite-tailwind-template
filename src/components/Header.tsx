@@ -1,9 +1,9 @@
-import { useQuery } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
-import { Sun, Moon, Settings, LogOut } from "lucide-react";
+import { Sun, Moon, Settings, LogOut, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useBillingStatus } from "../hooks/useBillingStatus";
@@ -61,6 +61,7 @@ export function UserProfileHeader() {
   const { signOut } = useAuthActions();
   const { theme, toggleTheme } = useAppStore();
   const navigate = useNavigate();
+  const generatePortalUrl = useAction(api.polar.generateCustomerPortalUrl);
 
   if (!currentUser) {
     return null;
@@ -84,6 +85,20 @@ export function UserProfileHeader() {
 
   const handleNavigateToSettings = () => {
     navigate("/settings");
+  };
+
+  const handleOpenCustomerPortal = async () => {
+    try {
+      const result = await generatePortalUrl();
+      if (result?.url) {
+        window.open(result.url, "_blank");
+      } else {
+        toast.error("Unable to open customer portal");
+      }
+    } catch (error) {
+      console.error("Failed to generate portal URL:", error);
+      toast.error("Failed to open customer portal");
+    }
   };
 
   return (
@@ -121,6 +136,10 @@ export function UserProfileHeader() {
         <DropdownMenuItem onClick={handleNavigateToSettings}>
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleOpenCustomerPortal}>
+          <CreditCard className="mr-2 h-4 w-4" />
+          <span>Customer Portal</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>

@@ -82,7 +82,7 @@ const orderTable = (rows: [string, string][]) =>
 export type EmailType = "welcome" | "premium_monthly" | "premium_quarterly" | "premium_semiannual" | "premium_lifetime" | "credit_bundle" | "generic_purchase";
 
 export interface WelcomeEmailParams { userName: string; email: string; }
-export interface PurchaseEmailParams { userName: string; email: string; productName: string; amount: string; currency: string; orderId?: string; purchaseDate?: string; }
+export interface PurchaseEmailParams { userName: string; email: string; productName: string; productDescription?: string; amount: string; currency: string; orderId?: string; purchaseDate?: string; }
 export interface CreditBundleEmailParams extends PurchaseEmailParams { credits?: number; bundleName?: string; }
 
 // ============================================

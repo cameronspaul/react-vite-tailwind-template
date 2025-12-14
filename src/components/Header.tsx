@@ -1,8 +1,8 @@
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
+import { useUserStore } from "../stores/useUserStore";
 import { Sun, Moon, Settings, LogOut, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { useEffect } from "react";
 
 export function SignIn() {
   const { signIn } = useAuthActions();
@@ -60,17 +61,35 @@ export function UserProfileHeader() {
   const currentUser = useQuery(api.users.getCurrentUser);
   const { signOut } = useAuthActions();
   const { theme, toggleTheme } = useAppStore();
+  const { cachedUser, setUser, clear: clearUserCache } = useUserStore();
   const navigate = useNavigate();
   const generatePortalUrl = useAction(api.polar.generateCustomerPortalUrl);
 
-  if (!currentUser) {
+  // Sync fresh user data to cache when it arrives
+  useEffect(() => {
+    if (currentUser === null) {
+      clearUserCache();
+    } else if (currentUser) {
+      setUser({
+        _id: currentUser._id,
+        name: currentUser.name,
+        email: currentUser.email,
+        image: currentUser.image,
+      });
+    }
+  }, [currentUser, setUser, clearUserCache]);
+
+  // Use cached data immediately, fall back to fresh data
+  const displayUser = cachedUser ?? currentUser;
+
+  if (!displayUser) {
     return null;
   }
 
   // Get initials for avatar fallback
-  const initials = currentUser.name
-    ? currentUser.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-    : currentUser.email?.[0]?.toUpperCase() || '?';
+  const initials = displayUser.name
+    ? displayUser.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : displayUser.email?.[0]?.toUpperCase() || '?';
 
   const handleThemeToggle = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
@@ -106,8 +125,8 @@ export function UserProfileHeader() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            {currentUser.image && (
-              <AvatarImage src={currentUser.image} alt="Profile" />
+            {displayUser.image && (
+              <AvatarImage src={displayUser.image} alt="Profile" />
             )}
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
@@ -117,10 +136,10 @@ export function UserProfileHeader() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {currentUser.name || "No name set"}
+              {displayUser.name || "No name set"}
             </p>
             <p className="text-xs leading-none text-muted-foreground">
-              {currentUser.email || "No email set"}
+              {displayUser.email || "No email set"}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -152,14 +171,6 @@ export function UserProfileHeader() {
 }
 
 export function Header() {
-  const { theme, toggleTheme } = useAppStore();
-
-  const handleThemeToggle = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    toggleTheme();
-    toast.success(`Switched to ${newTheme} mode`);
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -183,22 +194,7 @@ export function Header() {
           </div>
           <div className="flex items-center gap-4">
             <StatusBadge />
-            <Authenticated>
-              <UserProfileHeader />
-            </Authenticated>
-            <Unauthenticated>
-              <Button
-                onClick={handleThemeToggle}
-                variant="ghost"
-                size="icon"
-                aria-label="Toggle theme"
-                title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-              >
-                {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-              <SignIn />
-            </Unauthenticated>
+            <CachedAuthSection />
           </div>
         </div>
       </div>
@@ -207,7 +203,18 @@ export function Header() {
 }
 
 function StatusBadge() {
+  const { cachedUser, hasHydrated } = useUserStore();
+  const currentUser = useQuery(api.users.getCurrentUser);
   const { status, isPremium, isLifetime } = useBillingStatus();
+
+  // Don't show badge if user is not logged in
+  const hasCachedUser = hasHydrated && cachedUser !== null;
+  const isLoggedOut = currentUser === null && !hasCachedUser;
+
+  // Hide badge when logged out or during initial load with no cache
+  if (isLoggedOut || (!hasCachedUser && currentUser === undefined)) {
+    return null;
+  }
 
   // Only show "Checking..." if we have NO cached data (first-time users)
   // Otherwise, show the cached status immediately (no pop-in!)
@@ -231,5 +238,53 @@ function StatusBadge() {
     <Badge variant={variant}>
       {label}
     </Badge>
+  );
+}
+
+/**
+ * Uses cached user data to render auth state immediately.
+ * - If we have cached user data → show avatar immediately (no pop-in!)
+ * - If cache is empty and auth is loading → show nothing (avoids flash)
+ * - If no user (logged out) → show sign-in buttons
+ */
+function CachedAuthSection() {
+  const currentUser = useQuery(api.users.getCurrentUser);
+  const { cachedUser, hasHydrated } = useUserStore();
+  const { theme, toggleTheme } = useAppStore();
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    toggleTheme();
+    toast.success(`Switched to ${newTheme} mode`);
+  };
+
+  // Check if we have cached user data
+  const hasCachedUser = hasHydrated && cachedUser !== null;
+
+  // Show avatar ONLY if:
+  // 1. We have cached user data (instant, no waiting), OR
+  // 2. Auth has resolved and user is logged in
+  if (hasCachedUser || (currentUser !== undefined && currentUser !== null)) {
+    return <UserProfileHeader />;
+  }
+
+  // Default: show sign-in buttons immediately (no waiting for auth)
+  // This covers both:
+  // - Auth still loading (currentUser === undefined) with no cache
+  // - Auth resolved to logged out (currentUser === null)
+  return (
+    <>
+      <Button
+        onClick={handleThemeToggle}
+        variant="ghost"
+        size="icon"
+        aria-label="Toggle theme"
+        title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      >
+        {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+      <SignIn />
+    </>
   );
 }

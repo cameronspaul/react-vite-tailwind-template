@@ -22,6 +22,8 @@ import SafetyAndSecurity from './pages/contentpages/SafetyAndSecurity'
 import TermsOfService from './pages/contentpages/TermsOfService'
 import NotFound from './pages/NotFound'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import BlogIndex from './pages/blog/BlogIndex'
+import BlogPost from './pages/blog/BlogPost'
 
 
 function AppContent() {
@@ -65,6 +67,11 @@ function AppContent() {
             <Route path="/report-block-functionality" element={<ReportBlockFunctionality />} />
             <Route path="/safety-and-security" element={<SafetyAndSecurity />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
+
+            {/* Blog Routes */}
+            <Route path="/blog" element={<BlogIndex />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+
             {/* 404 catch-all route - must be last */}
             <Route path="*" element={<NotFound />} />
           </Routes>

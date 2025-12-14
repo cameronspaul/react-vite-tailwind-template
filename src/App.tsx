@@ -20,6 +20,8 @@ import RefundPolicy from './pages/contentpages/RefundPolicy'
 import ReportBlockFunctionality from './pages/contentpages/ReportBlockFunctionality'
 import SafetyAndSecurity from './pages/contentpages/SafetyAndSecurity'
 import TermsOfService from './pages/contentpages/TermsOfService'
+import NotFound from './pages/NotFound'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 
 function AppContent() {
@@ -63,6 +65,8 @@ function AppContent() {
             <Route path="/report-block-functionality" element={<ReportBlockFunctionality />} />
             <Route path="/safety-and-security" element={<SafetyAndSecurity />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
+            {/* 404 catch-all route - must be last */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />
@@ -73,9 +77,11 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

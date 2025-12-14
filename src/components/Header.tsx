@@ -2,7 +2,6 @@ import { useQuery, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useAppStore } from "../stores/useAppStore";
-import { useCacheStore } from "../stores/useCacheStore";
 import { Sun, Moon, Settings, LogOut, CreditCard } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -16,10 +15,11 @@ import {
 } from "./ui/dropdown-menu";
 import { useEffect } from "react";
 
+
 // Syncs user data to cache and provides auth state
 function useCachedAuth() {
   const currentUser = useQuery(api.users.getCurrentUser);
-  const { user: cachedUser, hydrated, setUser, clear } = useCacheStore();
+  const { user: cachedUser, hydrated, setUser, clear } = useAppStore();
 
   useEffect(() => {
     if (currentUser === null) clear();
@@ -35,6 +35,7 @@ function useCachedAuth() {
   const isLoggedIn = hasCached || (currentUser !== undefined && currentUser !== null);
   return { isLoggedIn, displayUser: cachedUser ?? currentUser, hasCached, currentUser };
 }
+
 
 export function SignIn() {
   const { signIn } = useAuthActions();

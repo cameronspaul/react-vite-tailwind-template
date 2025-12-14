@@ -15,9 +15,15 @@ import {
   Layout,
   Lock,
   Zap,
-  CreditCard
+  CreditCard,
+  Coins,
+  Minus,
+  Loader2
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { useState } from 'react'
 
 function Home() {
   return (
@@ -196,9 +202,157 @@ function Home() {
         </div>
       </section>
 
+      {/* Credits Demo Section */}
+      <section className="py-24 bg-muted/30">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight mb-4">Credits System Demo</h2>
+            <p className="text-muted-foreground">
+              This template includes a built-in credits system. Try using credits below.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-orange-500/10 blur-3xl -z-10" />
+            <CreditsDemo />
+          </div>
+        </div>
+      </section>
+
 
     </div>
   )
+}
+
+function CreditsDemo() {
+  const balance = useQuery(api.credits.getBalance);
+  const useCredits = useMutation(api.credits.useCredits);
+  const [isUsing, setIsUsing] = useState(false);
+  const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleUseCredits = async () => {
+    setIsUsing(true);
+    setLastResult(null);
+    try {
+      const result = await useCredits({ amount: 10 });
+      setLastResult({
+        success: true,
+        message: `Successfully used 10 credits! Remaining: ${result.remainingBalance}`
+      });
+    } catch (error) {
+      setLastResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to use credits'
+      });
+    } finally {
+      setIsUsing(false);
+    }
+  };
+
+  // Not logged in
+  if (balance === null) {
+    return (
+      <Card className="border-dashed border-2">
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+          <Coins className="h-12 w-12 text-muted-foreground/50" />
+          <div className="space-y-2">
+            <h3 className="font-semibold text-xl">Sign In Required</h3>
+            <p className="text-muted-foreground max-w-sm mx-auto">
+              Sign in to view your credit balance and use credits.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Loading state
+  if (balance === undefined) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-amber-500/50 shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Coins className="h-5 w-5 text-amber-500" />
+          Your Credit Balance
+        </CardTitle>
+        <CardDescription>
+          Use credits to access special features throughout the app
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Balance Display */}
+        <div className="flex items-center justify-center">
+          <div className="text-center p-6 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl">
+            <p className="text-sm text-muted-foreground mb-1">Available Credits</p>
+            <p className="text-5xl font-bold text-amber-500">{balance}</p>
+          </div>
+        </div>
+
+        {/* Use Credits Button */}
+        <div className="flex flex-col items-center gap-4">
+          <Button
+            onClick={handleUseCredits}
+            disabled={isUsing || balance < 10}
+            className="bg-amber-500 hover:bg-amber-600 text-white"
+            size="lg"
+          >
+            {isUsing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Using Credits...
+              </>
+            ) : (
+              <>
+                <Minus className="mr-2 h-4 w-4" />
+                Use 10 Credits
+              </>
+            )}
+          </Button>
+
+          {balance < 10 && balance > 0 && (
+            <p className="text-sm text-muted-foreground text-center">
+              You need at least 10 credits to use this feature.
+            </p>
+          )}
+
+          {balance === 0 && (
+            <div className="text-center space-y-2">
+              <p className="text-sm text-muted-foreground">
+                You don't have any credits yet.
+              </p>
+              <Button variant="outline" asChild>
+                <Link to="/credits">Buy Credits</Link>
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Result Message */}
+        {lastResult && (
+          <div className={`p-4 rounded-lg text-center text-sm font-medium ${lastResult.success
+              ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+              : 'bg-red-500/10 text-red-600 dark:text-red-400'
+            }`}>
+            {lastResult.message}
+          </div>
+        )}
+
+        {/* Info */}
+        <p className="text-xs text-muted-foreground text-center">
+          This is a demo. In a real app, using credits would unlock features or actions.
+        </p>
+      </CardContent>
+    </Card>
+  );
 }
 
 export default Home

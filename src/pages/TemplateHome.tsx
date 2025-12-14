@@ -26,6 +26,8 @@ import { api } from '../../convex/_generated/api'
 import { useState } from 'react'
 import { PageSEO } from '../components/SEO'
 import { usePostHogAnalytics } from '../hooks/usePostHogAnalytics'
+import { useDialog, ConfirmDialogs, AlertDialogs } from '../components/Modal'
+import { MessageSquare } from 'lucide-react'
 
 function Home() {
   const { capture } = usePostHogAnalytics()
@@ -235,6 +237,23 @@ function Home() {
         </div>
       </section>
 
+      {/* Dialog System Demo */}
+      <section className="py-24">
+        <div className="container px-4 mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight mb-4">Dialog System Demo</h2>
+            <p className="text-muted-foreground">
+              This template includes a robust dialog system managed by context. Try the examples below.
+            </p>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 blur-3xl -z-10" />
+            <DialogDemo />
+          </div>
+        </div>
+      </section>
+
 
     </div>
   )
@@ -375,6 +394,74 @@ function CreditsDemo() {
       </CardContent>
     </Card>
   );
+}
+
+function DialogDemo() {
+  const dialog = useDialog()
+
+  const handleConfirm = async () => {
+    await dialog.confirm({
+      title: 'Custom Confirmation',
+      description: 'This is a custom confirmation dialog. Do you want to proceed?',
+      confirmText: 'Yes, Proceed',
+      cancelText: 'No, Cancel',
+      variant: 'default',
+      icon: <MessageSquare className="w-6 h-6 text-primary" />,
+    })
+  }
+
+  const handleDelete = async () => {
+    await dialog.confirm(ConfirmDialogs.delete({
+      itemName: 'Example Project',
+      onConfirm: async () => {
+        // Simulate async operation
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }))
+  }
+
+  const handleSuccessAlert = async () => {
+    await dialog.alert(AlertDialogs.success({
+      title: 'Operation Successful',
+      description: 'Your changes have been saved successfully.'
+    }))
+  }
+
+  const handleErrorAlert = async () => {
+    await dialog.alert(AlertDialogs.error({
+      description: 'An unexpected error occurred. Please try again later.'
+    }))
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5" />
+          Interactive Dialogs
+        </CardTitle>
+        <CardDescription>
+          Click the buttons below to trigger different types of dialogs
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Button onClick={handleConfirm} variant="outline" className="w-full">
+            Custom Confirm
+          </Button>
+          <Button onClick={handleDelete} variant="destructive" className="w-full">
+            Delete Item (Async)
+          </Button>
+          <Button onClick={handleSuccessAlert} className="w-full bg-green-600 hover:bg-green-700">
+            Success Alert
+          </Button>
+          <Button onClick={handleErrorAlert} variant="secondary" className="w-full">
+            Error Alert
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default Home

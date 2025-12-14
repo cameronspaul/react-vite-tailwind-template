@@ -8,6 +8,7 @@ import { ConvexReactClient } from 'convex/react'
 import { ConvexAuthProvider } from '@convex-dev/auth/react'
 import posthog from 'posthog-js'
 import { PostHogProvider } from '@posthog/react'
+import { DialogProvider } from './components/Modal.tsx'
 import App from './App.tsx'
 
 const queryClient = new QueryClient()
@@ -44,11 +45,14 @@ createRoot(document.getElementById('root')!).render(
     <PostHogProvider client={posthog}>
       <QueryClientProvider client={queryClient}>
         <ConvexAuthProvider client={convex}>
-          <App />
-          <ReactQueryDevtools initialIsOpen={false} />
-          <Toaster position="top-center" />
+          <DialogProvider>
+            <App />
+            <ReactQueryDevtools initialIsOpen={false} />
+            <Toaster position="top-center" />
+          </DialogProvider>
         </ConvexAuthProvider>
       </QueryClientProvider>
     </PostHogProvider>
   </StrictMode>,
 )
+

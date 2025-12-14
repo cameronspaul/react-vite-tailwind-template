@@ -24,6 +24,7 @@ import NotFound from './pages/NotFound'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import BlogIndex from './pages/blog/BlogIndex'
 import BlogPost from './pages/blog/BlogPost'
+import { GoogleAnalytics } from './components/GoogleAnalytics'
 
 
 function AppContent() {
@@ -45,6 +46,8 @@ function AppContent() {
   return (
     <BillingProvider>
       <div className="min-h-screen bg-background flex flex-col">
+
+        <GoogleAnalytics />
         <Header />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">

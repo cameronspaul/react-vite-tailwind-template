@@ -19,6 +19,7 @@ import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
 import { Check, AlertTriangle, CheckCircle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
+import { PageSEO } from "../components/SEO";
 
 export const ProductList = () => {
   const location = useLocation();
@@ -246,60 +247,63 @@ export const ProductList = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-6xl">
-      <div className="text-center mb-16 space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Simple, transparent pricing
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Choose the plan that's right for you.
-          No hidden fees.
-        </p>
+    <>
+      <PageSEO.Pricing />
+      <div className="container mx-auto px-4 py-16 max-w-6xl">
+        <div className="text-center mb-16 space-y-4">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            Simple, transparent pricing
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Choose the plan that's right for you.
+            No hidden fees.
+          </p>
+        </div>
+
+        {showSuccess && (
+          <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
+            <CheckCircle className="h-4 w-4 text-primary" />
+            <AlertTitle>Payment Successful!</AlertTitle>
+            <AlertDescription>Your account has been upgraded.</AlertDescription>
+          </Alert>
+        )}
+
+        {billing.isPremium && (
+          <div className="flex justify-center mb-12">
+            <Button asChild variant="outline">
+              <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
+                Open Customer Portal
+              </CustomerPortalLink>
+            </Button>
+          </div>
+        )}
+
+        {/* Subscription Plans */}
+        {recurringProducts.length > 0 && (
+          <div className="mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+              {recurringProducts.map((product) => (
+                <SubscriptionCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Lifetime Plan Section */}
+        {lifetimeProducts.length > 0 && (
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold">Lifetime Access</h2>
+              <p className="text-muted-foreground">Pay once, own it forever.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
+              {lifetimeProducts.map((product) => (
+                <LifetimeCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {showSuccess && (
-        <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
-          <CheckCircle className="h-4 w-4 text-primary" />
-          <AlertTitle>Payment Successful!</AlertTitle>
-          <AlertDescription>Your account has been upgraded.</AlertDescription>
-        </Alert>
-      )}
-
-      {billing.isPremium && (
-        <div className="flex justify-center mb-12">
-          <Button asChild variant="outline">
-            <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
-              Open Customer Portal
-            </CustomerPortalLink>
-          </Button>
-        </div>
-      )}
-
-      {/* Subscription Plans */}
-      {recurringProducts.length > 0 && (
-        <div className="mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-            {recurringProducts.map((product) => (
-              <SubscriptionCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Lifetime Plan Section */}
-      {lifetimeProducts.length > 0 && (
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold">Lifetime Access</h2>
-            <p className="text-muted-foreground">Pay once, own it forever.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
-            {lifetimeProducts.map((product) => (
-              <LifetimeCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };

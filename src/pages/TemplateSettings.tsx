@@ -14,6 +14,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
 import { useBillingStatus } from '@/hooks/useBillingStatus';
 import { SignIn } from '@/components/Auth';
+import { PageSEO } from '@/components/SEO';
 
 function InfoItem({ label, value }: { label: string; value: string | null | undefined }) {
     return (
@@ -234,6 +235,7 @@ function SettingsContent() {
 export default function Settings() {
     return (
         <>
+            <PageSEO.Settings />
             <Authenticated>
                 <SettingsContent />
             </Authenticated>

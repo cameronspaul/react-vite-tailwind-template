@@ -18,6 +18,7 @@ import { Skeleton } from "../components/ui/skeleton";
 
 import { Check, CheckCircle, AlertTriangle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
+import { PageSEO } from "../components/SEO";
 
 // Credit packages configuration - customize these for your needs
 // All bundles use the same Polar product ID with "custom" price type
@@ -236,65 +237,69 @@ export const CreditsPage = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-16 max-w-6xl">
-            <div className="text-center mb-16 space-y-4">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                    Purchase Credits
-                </h1>
-                {balance !== undefined && balance !== null && (
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full text-foreground/80 font-medium">
+        <>
+            <PageSEO.Credits />
+            <div className="container mx-auto px-4 py-16 max-w-6xl">
+                <div className="text-center mb-16 space-y-4">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                        Purchase Credits
+                    </h1>
+                    {balance !== undefined && balance !== null && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full text-foreground/80 font-medium">
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                            Current Balance: {balance} Credits
+                        </div>
+                    )}
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                        Credits can be used to unlock premium features and actions.
+                        No hidden fees.
+                    </p>
+                </div>
+
+                {showSuccess && (
+                    <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
                         <CheckCircle className="h-4 w-4 text-primary" />
-                        Current Balance: {balance} Credits
-                    </div>
+                        <AlertTitle>Purchase Successful!</AlertTitle>
+                        <AlertDescription>Your credits have been added to your account.</AlertDescription>
+                    </Alert>
                 )}
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Credits can be used to unlock premium features and actions.
-                    No hidden fees.
-                </p>
-            </div>
 
-            {showSuccess && (
-                <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    <AlertTitle>Purchase Successful!</AlertTitle>
-                    <AlertDescription>Your credits have been added to your account.</AlertDescription>
-                </Alert>
-            )}
+                {/* Credits Packages Grid */}
+                <div className="mb-16">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+                        {creditPackages.map((creditPackage) => (
+                            <CreditPackageCard key={creditPackage.id} creditPackage={creditPackage} />
+                        ))}
+                    </div>
+                </div>
 
-            {/* Credits Packages Grid */}
-            <div className="mb-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-                    {creditPackages.map((creditPackage) => (
-                        <CreditPackageCard key={creditPackage.id} creditPackage={creditPackage} />
-                    ))}
+                {/* Info Section */}
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-semibold">How Credits Work</h2>
+                        <p className="text-muted-foreground">Buy once, use anytime.</p>
+                    </div>
+                    <Card className="flex flex-col border-2 border-muted bg-muted/20">
+                        <CardContent>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />
+                                    <span>Credits never expire — use them whenever you need</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />
+                                    <span>Buy larger packs for better value per credit</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />
+                                    <span>Instant delivery to your account</span>
+                                </li>
+                            </ul>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
-
-            {/* Info Section */}
-            <div className="max-w-3xl mx-auto">
-                <div className="text-center mb-8">
-                    <h2 className="text-2xl font-semibold">How Credits Work</h2>
-                    <p className="text-muted-foreground">Buy once, use anytime.</p>
-                </div>
-                <Card className="flex flex-col border-2 border-muted bg-muted/20">
-                    <CardContent>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Credits never expire — use them whenever you need</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Buy larger packs for better value per credit</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Instant delivery to your account</span>
-                            </li>
-                        </ul>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+        </>
     );
 };
+

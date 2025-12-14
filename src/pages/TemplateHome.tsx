@@ -24,10 +24,12 @@ import { Link } from 'react-router-dom'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useState } from 'react'
+import { PageSEO } from '../components/SEO'
 
 function Home() {
   return (
     <div className="flex flex-col min-h-screen">
+      <PageSEO.Home />
       {/* Hero Section */}
       <section className="relative py-10 overflow-hidden">
         <div className="container px-4 md:px-6 mx-auto flex flex-col items-center text-center">
@@ -339,8 +341,8 @@ function CreditsDemo() {
         {/* Result Message */}
         {lastResult && (
           <div className={`p-4 rounded-lg text-center text-sm font-medium ${lastResult.success
-              ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-              : 'bg-red-500/10 text-red-600 dark:text-red-400'
+            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
+            : 'bg-red-500/10 text-red-600 dark:text-red-400'
             }`}>
             {lastResult.message}
           </div>

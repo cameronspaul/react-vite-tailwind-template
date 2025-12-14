@@ -25,8 +25,11 @@ import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useState } from 'react'
 import { PageSEO } from '../components/SEO'
+import { usePostHogAnalytics } from '../hooks/usePostHogAnalytics'
 
 function Home() {
+  const { capture } = usePostHogAnalytics()
+
   return (
     <div className="flex flex-col min-h-screen">
       <PageSEO.Home />
@@ -45,12 +48,23 @@ function Home() {
             Stop setting up, start building.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Button size="lg" className="h-12 px-8 text-base shadow-lg hover:shadow-xl transition-all" asChild>
+            <Button
+              size="lg"
+              className="h-12 px-8 text-base shadow-lg hover:shadow-xl transition-all"
+              asChild
+              onClick={() => capture('cta_clicked', { button: 'get_started', location: 'hero' })}
+            >
               <a href="https://github.com/cameronspaul/react-vite-tailwind-template" target="_blank" rel="noopener noreferrer">
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
               </a>
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base" asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              className="h-12 px-8 text-base"
+              asChild
+              onClick={() => capture('cta_clicked', { button: 'view_pricing', location: 'hero' })}
+            >
               <Link to="/pricing">View Pricing</Link>
             </Button>
           </div>
@@ -229,10 +243,12 @@ function Home() {
 function CreditsDemo() {
   const balance = useQuery(api.credits.getBalance);
   const useCredits = useMutation(api.credits.useCredits);
+  const { capture } = usePostHogAnalytics();
   const [isUsing, setIsUsing] = useState(false);
   const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleUseCredits = async () => {
+    capture('credits_used', { amount: 10, current_balance: balance });
     setIsUsing(true);
     setLastResult(null);
     try {
@@ -331,7 +347,11 @@ function CreditsDemo() {
               <p className="text-sm text-muted-foreground">
                 You don't have any credits yet.
               </p>
-              <Button variant="outline" asChild>
+              <Button
+                variant="outline"
+                asChild
+                onClick={() => capture('cta_clicked', { button: 'buy_credits', location: 'credits_demo' })}
+              >
                 <Link to="/credits">Buy Credits</Link>
               </Button>
             </div>

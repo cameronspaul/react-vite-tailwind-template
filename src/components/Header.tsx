@@ -14,6 +14,7 @@ import {
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { useEffect } from "react";
+import { usePostHogAnalytics } from "../hooks/usePostHogAnalytics";
 
 
 // Syncs user data to cache and provides auth state
@@ -39,18 +40,30 @@ function useCachedAuth() {
 
 export function SignIn() {
   const { signIn } = useAuthActions();
+  const { capture } = usePostHogAnalytics();
+
+  const handleSignIn = (provider: 'github' | 'google') => {
+    capture('sign_in_clicked', { provider });
+    void signIn(provider);
+  };
+
   return (
     <div className="flex gap-2">
-      <Button onClick={() => void signIn("github")} variant="default" size="sm">Sign in with GitHub</Button>
-      <Button onClick={() => void signIn("google")} variant="outline" size="sm">Sign in with Google</Button>
+      <Button onClick={() => handleSignIn('github')} variant="default" size="sm">Sign in with GitHub</Button>
+      <Button onClick={() => handleSignIn('google')} variant="outline" size="sm">Sign in with Google</Button>
     </div>
   );
 }
 
 function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "menu" }) {
   const { theme, toggleTheme } = useAppStore();
+  const { capture } = usePostHogAnalytics();
   const isDark = theme === "dark";
-  const toggle = () => { toggleTheme(); toast.success(`Switched to ${isDark ? "light" : "dark"} mode`); };
+  const toggle = () => {
+    capture('theme_toggled', { from: theme, to: isDark ? 'light' : 'dark' });
+    toggleTheme();
+    toast.success(`Switched to ${isDark ? "light" : "dark"} mode`);
+  };
 
   if (variant === "menu") {
     return (
@@ -72,14 +85,24 @@ function UserProfileHeader() {
   const navigate = useNavigate();
   const generatePortalUrl = useAction(api.polar.generateCustomerPortalUrl);
   const { displayUser } = useCachedAuth();
+  const { capture } = usePostHogAnalytics();
 
   if (!displayUser) return null;
 
   const initials = displayUser.name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
     || displayUser.email?.[0]?.toUpperCase() || "?";
 
-  const handleSignOut = () => { void signOut(); toast.success("Signed out"); };
+  const handleSignOut = () => {
+    capture('sign_out_clicked');
+    void signOut();
+    toast.success("Signed out");
+  };
+  const handleSettings = () => {
+    capture('settings_clicked', { location: 'header_dropdown' });
+    navigate("/settings");
+  };
   const handlePortal = async () => {
+    capture('customer_portal_clicked', { location: 'header_dropdown' });
     try {
       const r = await generatePortalUrl();
       if (r?.url) window.open(r.url, "_blank");
@@ -104,7 +127,7 @@ function UserProfileHeader() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ThemeToggle variant="menu" />
-        <DropdownMenuItem onClick={() => navigate("/settings")}>
+        <DropdownMenuItem onClick={handleSettings}>
           <Settings className="mr-2 h-4 w-4" /><span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handlePortal}>

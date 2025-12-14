@@ -20,12 +20,14 @@ import { Skeleton } from "../components/ui/skeleton";
 import { Check, AlertTriangle, CheckCircle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
 import { PageSEO } from "../components/SEO";
+import { usePostHogAnalytics } from "../hooks/usePostHogAnalytics";
 
 export const ProductList = () => {
   const location = useLocation();
   const billing = useBillingStatus();
   const { refresh: refreshBilling } = billing;
   const createCheckoutSession = useAction(api.polar.createCheckoutSession);
+  const { capture } = usePostHogAnalytics();
   const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
   const billingReady = billing.status === "ready";
@@ -62,7 +64,13 @@ export const ProductList = () => {
     }).format(amount / 100);
   };
 
-  const handleCheckout = async (polarProductId: string) => {
+  const handleCheckout = async (polarProductId: string, productName?: string, price?: number) => {
+    capture('checkout_started', {
+      product_id: polarProductId,
+      product_name: productName,
+      price: price,
+      location: 'pricing_page'
+    });
     setLoadingProductId(polarProductId);
     try {
       const result = await createCheckoutSession({ productId: polarProductId });
@@ -70,9 +78,11 @@ export const ProductList = () => {
         window.location.href = result.url;
       } else {
         console.error("Checkout error:", result.error);
+        capture('checkout_error', { product_id: polarProductId, error: result.error });
       }
     } catch (error) {
       console.error("Failed to create checkout session:", error);
+      capture('checkout_error', { product_id: polarProductId, error: String(error) });
     } finally {
       setLoadingProductId(null);
     }
@@ -101,7 +111,7 @@ export const ProductList = () => {
         className="w-full"
         variant={variant}
         disabled={isLoading}
-        onClick={() => handleCheckout(product.polarProductId!)}
+        onClick={() => handleCheckout(product.polarProductId!, product.name, product.prices[0]?.priceAmount)}
       >
         {isLoading ? (
           <Skeleton className="h-4 w-20" />

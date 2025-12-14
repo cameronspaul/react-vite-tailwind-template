@@ -19,6 +19,7 @@ import { Skeleton } from "../components/ui/skeleton";
 import { Check, CheckCircle, AlertTriangle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
 import { PageSEO } from "../components/SEO";
+import { usePostHogAnalytics } from "../hooks/usePostHogAnalytics";
 
 // Credit packages configuration - customize these for your needs
 // All bundles use the same Polar product ID with "custom" price type
@@ -83,6 +84,7 @@ export const CreditsPage = () => {
     const { refresh: refreshBilling } = billing;
     const createCheckoutSession = useAction(api.polar.createCheckoutSession);
     const balance = useQuery(api.credits.getBalance);
+    const { capture } = usePostHogAnalytics();
     const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
     const billingReady = billing.status === "ready";
@@ -110,6 +112,14 @@ export const CreditsPage = () => {
     const handleCheckout = async (creditPackage: typeof creditPackages[0]) => {
         if (!creditPackage.polarProductId) return;
 
+        capture('credits_checkout_started', {
+            bundle_id: creditPackage.id,
+            bundle_name: creditPackage.name,
+            credits: creditPackage.credits,
+            price: creditPackage.price,
+            current_balance: balance,
+        });
+
         setLoadingProductId(creditPackage.id); // Track by bundle id since all use same product
         try {
             const result = await createCheckoutSession({
@@ -128,9 +138,11 @@ export const CreditsPage = () => {
                 window.location.href = result.url;
             } else {
                 console.error("Checkout error:", result.error);
+                capture('credits_checkout_error', { bundle_id: creditPackage.id, error: result.error });
             }
         } catch (error) {
             console.error("Failed to create checkout session:", error);
+            capture('credits_checkout_error', { bundle_id: creditPackage.id, error: String(error) });
         } finally {
             setLoadingProductId(null);
         }

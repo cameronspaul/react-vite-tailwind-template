@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useBillingStatus } from '@/hooks/useBillingStatus';
 import { SignIn } from '@/components/Auth';
 import { PageSEO } from '@/components/SEO';
+import { usePostHogAnalytics } from '@/hooks/usePostHogAnalytics';
 
 function InfoItem({ label, value }: { label: string; value: string | null | undefined }) {
     return (
@@ -33,19 +34,23 @@ function SettingsContent() {
     const currentUser = useQuery(api.users.getCurrentUser);
     const deleteUserMutation = useMutation(api.users.deleteUser);
     const { isPremium, isLifetime, data: billingData } = useBillingStatus();
+    const { capture } = usePostHogAnalytics();
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDeleteAccount = async () => {
+        capture('account_delete_confirmed');
         setIsDeleting(true);
         try {
             await deleteUserMutation();
             await signOut();
+            capture('account_deleted');
             toast.success('Your account has been deleted successfully.');
             navigate('/');
         } catch (error) {
             console.error('Failed to delete account:', error);
+            capture('account_delete_error', { error: String(error) });
             toast.error('Failed to delete account. Please try again.');
             setIsDeleting(false);
         }
@@ -174,7 +179,10 @@ function SettingsContent() {
                             </div>
                             <Button
                                 variant="destructive"
-                                onClick={() => setShowDeleteConfirm(true)}
+                                onClick={() => {
+                                    capture('account_delete_clicked');
+                                    setShowDeleteConfirm(true);
+                                }}
                                 className="shrink-0"
                             >
                                 Delete Account

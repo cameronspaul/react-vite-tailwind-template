@@ -209,6 +209,8 @@ export function Header() {
 function StatusBadge() {
   const { status, isPremium, isLifetime } = useBillingStatus();
 
+  // Only show "Checking..." if we have NO cached data (first-time users)
+  // Otherwise, show the cached status immediately (no pop-in!)
   const label =
     status === "loading"
       ? "Checking..."

@@ -4,30 +4,35 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
 } from "react";
 import { useAction, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useBillingStore } from "../stores/useBillingStore";
 
 type BillingData =
   | {
-      subscription: {
-        product?: {
-          name?: string | null;
-          isRecurring?: boolean;
-        };
-      } | null;
-      isPremium: boolean;
-      isLifetime: boolean;
-      hasSubscription?: boolean;
-      email?: string | null;
-      name?: string | null;
-    }
+    subscription: {
+      product?: {
+        name?: string | null;
+        isRecurring?: boolean;
+      };
+    } | null;
+    isPremium: boolean;
+    isLifetime: boolean;
+    hasSubscription?: boolean;
+    email?: string | null;
+    name?: string | null;
+  }
   | null;
 
 type BillingContextValue = {
   data: BillingData;
-  status: "loading" | "ready";
+  /** 
+   * "loading" = first-time load with no cached data
+   * "refreshing" = we have cached data but are updating in background
+   * "ready" = fresh data is available
+   */
+  status: "loading" | "refreshing" | "ready";
   isPremium: boolean;
   isLifetime: boolean;
   refresh: () => Promise<void>;
@@ -44,8 +49,9 @@ export function BillingProvider({
 }) {
   const currentUser = useQuery(api.users.getCurrentUser);
   const fetchBillingStatus = useAction(api.polar.getBillingStatus);
-  const [billing, setBilling] = useState<BillingData | null>(null);
-  const [status, setStatus] = useState<"loading" | "ready">("loading");
+
+  // Zustand store with persistence
+  const { cachedBilling, hasHydrated, isRefreshing, setBilling, setRefreshing, clear } = useBillingStore();
 
   const refresh = useCallback(async () => {
     // Avoid mutating state while auth is still resolving.
@@ -53,30 +59,34 @@ export function BillingProvider({
       return;
     }
 
-    // Clear immediately if unauthenticated.
+    // Clear cache if unauthenticated.
     if (currentUser === null) {
-      setBilling(null);
-      setStatus("ready");
+      clear();
       return;
     }
 
-    setStatus("loading");
+    setRefreshing(true);
 
     try {
       const result = await fetchBillingStatus();
       setBilling(result ?? null);
     } catch (error) {
       console.error("Failed to load billing status", error);
-      setBilling(null);
+      // Keep cached data on error - don't clear it
     } finally {
-      setStatus("ready");
+      setRefreshing(false);
     }
-  }, [currentUser, fetchBillingStatus]);
+  }, [currentUser, fetchBillingStatus, setBilling, setRefreshing, clear]);
 
   useEffect(() => {
     // Wait for auth to resolve; useQuery returns undefined while loading.
     if (currentUser === undefined) {
-      setStatus("loading");
+      return;
+    }
+
+    // Clear cache if user logs out
+    if (currentUser === null) {
+      clear();
       return;
     }
 
@@ -86,15 +96,38 @@ export function BillingProvider({
       await refresh();
     };
 
+    // Always refresh in background to keep data fresh
     void load();
+
     return () => {
       cancelled = true;
     };
-  }, [currentUser, refresh]);
+  }, [currentUser, refresh, clear]);
 
   const value = useMemo<BillingContextValue>(() => {
+    // Use cached data immediately - no flash!
+    const billing = cachedBilling;
     const isPremium = Boolean(billing?.isPremium);
     const isLifetime = Boolean(billing?.isLifetime);
+
+    // Determine status:
+    // - "loading" only if we have NO cached data AND auth/fetch is pending
+    // - "refreshing" if we have cached data but are updating it
+    // - "ready" if we have data and aren't refreshing
+    let status: "loading" | "refreshing" | "ready";
+
+    if (!hasHydrated && currentUser === undefined) {
+      // First load, still waiting for auth
+      status = "loading";
+    } else if (!hasHydrated && !cachedBilling && currentUser !== null) {
+      // Authenticated but no cache yet - show loading
+      status = "loading";
+    } else if (isRefreshing) {
+      // We have cache, just updating in background
+      status = "refreshing";
+    } else {
+      status = "ready";
+    }
 
     return {
       data: billing,
@@ -103,7 +136,7 @@ export function BillingProvider({
       isLifetime,
       refresh,
     };
-  }, [billing, refresh, status]);
+  }, [cachedBilling, hasHydrated, isRefreshing, currentUser, refresh]);
 
   return (
     <BillingContext.Provider value={value}>

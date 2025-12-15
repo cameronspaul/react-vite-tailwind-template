@@ -10,8 +10,6 @@ import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import {
   ArrowRight,
-  Code2,
-  Database,
   Layout,
   Lock,
   Zap,

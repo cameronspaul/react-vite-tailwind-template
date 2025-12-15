@@ -1,6 +1,6 @@
 # 🚀 SaaS Boilerplate Pro
 
-A production-ready SaaS boilerplate built with **React 19**, **Vite**, **Tailwind CSS v4**, **Shadcn UI**, **Convex**, and **Polar.sh**. Stop setting up infrastructure and start building your product immediately.
+A production-ready SaaS boilerplate built with **React 19**, **Vite**, **Tailwind CSS v4**, **Shadcn UI**, **Convex**, and **Polar.sh**.
 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite)

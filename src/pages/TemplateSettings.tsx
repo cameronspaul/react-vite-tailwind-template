@@ -16,6 +16,7 @@ import { useBillingStatus } from '@/hooks/useBillingStatus';
 import { SignIn } from '@/components/Auth';
 import { PageSEO } from '@/components/SEO';
 import { usePostHogAnalytics } from '@/hooks/usePostHogAnalytics';
+import { FeedbackWidget } from '@/components/FeedbackWidget';
 
 function InfoItem({ label, value }: { label: string; value: string | null | undefined }) {
     return (
@@ -160,6 +161,9 @@ function SettingsContent() {
                         </div>
                     </CardContent>
                 </Card>
+
+                {/* Feedback Widget */}
+                <FeedbackWidget />
 
                 {/* Danger Zone */}
                 <Card className="border-destructive/50 shadow-lg">

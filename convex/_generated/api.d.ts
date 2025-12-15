@@ -11,6 +11,7 @@
 import type * as auth from "../auth.js";
 import type * as credits from "../credits.js";
 import type * as emailTemplates from "../emailTemplates.js";
+import type * as feedback from "../feedback.js";
 import type * as http from "../http.js";
 import type * as polar from "../polar.js";
 import type * as resend from "../resend.js";
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   credits: typeof credits;
   emailTemplates: typeof emailTemplates;
+  feedback: typeof feedback;
   http: typeof http;
   polar: typeof polar;
   resend: typeof resend;

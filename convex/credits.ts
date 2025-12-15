@@ -1,6 +1,7 @@
 import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkRateLimit } from "./rateLimit";
 
 // Get the current user's credit balance
 export const getBalance = query({
@@ -68,6 +69,12 @@ export const useCredits = mutation({
 
         if (amount <= 0) {
             throw new Error("Amount must be positive");
+        }
+
+        // Anti-spam: Block if 10+ uses in 10 seconds
+        const rateLimit = await checkRateLimit(ctx, userId, "credit_use");
+        if (!rateLimit.allowed) {
+            throw new Error(rateLimit.message);
         }
 
         const existingCredits = await ctx.db

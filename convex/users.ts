@@ -1,6 +1,7 @@
 import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkRateLimit } from "./rateLimit";
 
 // Internal query to get user ID by email (used by webhooks)
 export const getUserIdByEmail = internalQuery({
@@ -45,6 +46,12 @@ export const updateProfile = mutation({
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       throw new Error("Client is not authenticated");
+    }
+
+    // Anti-spam rate limiting for profile updates
+    const rateLimit = await checkRateLimit(ctx, userId, "profile_update");
+    if (!rateLimit.allowed) {
+      throw new Error(rateLimit.message);
     }
 
     // Filter out undefined values to only update provided fields

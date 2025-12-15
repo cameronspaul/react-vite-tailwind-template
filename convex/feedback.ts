@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkRateLimit } from "./rateLimit";
 
 // Feedback types
 export const feedbackTypes = ["bug", "feature", "improvement", "other"] as const;
@@ -22,6 +23,12 @@ export const submitFeedback = mutation({
         const userId = await getAuthUserId(ctx);
         if (userId === null) {
             throw new Error("Must be logged in to submit feedback");
+        }
+
+        // Anti-spam: Block if 3+ submissions in 10 seconds
+        const rateLimit = await checkRateLimit(ctx, userId, "feedback");
+        if (!rateLimit.allowed) {
+            throw new Error(rateLimit.message);
         }
 
         // Get user info for context

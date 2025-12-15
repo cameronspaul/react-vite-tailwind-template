@@ -52,6 +52,15 @@ const schema = defineSchema({
     .index("by_userId", ["userId"])
     .index("by_status", ["status"])
     .index("by_type", ["type"]),
+
+  // Rate limiting table - tracks user actions for anti-spam protection
+  rateLimits: defineTable({
+    userId: v.id("users"),
+    action: v.string(), // Action type: "feedback", "credit_use", etc.
+    timestamp: v.number(), // When the action occurred
+  })
+    .index("by_user_action", ["userId", "action"])
+    .index("by_timestamp", ["timestamp"]), // For cleanup of old records
 });
 
 export default schema;

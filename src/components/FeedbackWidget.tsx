@@ -42,8 +42,18 @@ export function FeedbackWidget() {
             setMessage('');
             setType('feature');
         } catch (err) {
-            capture('feedback_error', { error: String(err) });
-            toast.error('Failed to submit', { description: 'Please try again.' });
+            const errorMsg = String(err);
+            capture('feedback_error', { error: errorMsg });
+
+            // Check for rate limit error
+            if (errorMsg.includes('Slow down') || errorMsg.includes('Too many requests')) {
+                toast.warning('Slow down!', {
+                    description: 'Please wait a moment before sending more feedback.',
+                    duration: 5000,
+                });
+            } else {
+                toast.error('Failed to submit', { description: 'Please try again.' });
+            }
         } finally {
             setSending(false);
         }

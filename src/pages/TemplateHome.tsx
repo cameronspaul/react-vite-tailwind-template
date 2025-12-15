@@ -275,9 +275,19 @@ function CreditsDemo() {
         description: `Used 10 credits. Remaining: ${result.remainingBalance}`,
       });
     } catch (error) {
-      toast.error("Failed to Use Credits", {
-        description: error instanceof Error ? error.message : 'An error occurred',
-      });
+      const errorMsg = error instanceof Error ? error.message : String(error);
+
+      // Check for rate limit error
+      if (errorMsg.includes('Slow down') || errorMsg.includes('Too many requests')) {
+        toast.warning('Slow down!', {
+          description: 'Please wait a moment before using more credits.',
+          duration: 5000,
+        });
+      } else {
+        toast.error("Failed to Use Credits", {
+          description: errorMsg,
+        });
+      }
     } finally {
       setIsUsing(false);
     }

@@ -20,11 +20,20 @@ import RefundPolicy from './pages/contentpages/RefundPolicy'
 import ReportBlockFunctionality from './pages/contentpages/ReportBlockFunctionality'
 import SafetyAndSecurity from './pages/contentpages/SafetyAndSecurity'
 import TermsOfService from './pages/contentpages/TermsOfService'
+import NotFound from './pages/NotFound'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import BlogIndex from './pages/blog/BlogIndex'
+import BlogPost from './pages/blog/BlogPost'
+import { GoogleAnalytics } from './components/GoogleAnalytics'
+import { useAuthToast } from './hooks/useAuthToast'
 
 
 function AppContent() {
   const theme = useAppStore((s) => s.theme)
   const { pathname } = useLocation()
+
+  // Auth toast notifications (sign in welcome)
+  useAuthToast()
 
   useEffect(() => {
     const root = document.documentElement
@@ -41,6 +50,8 @@ function AppContent() {
   return (
     <BillingProvider>
       <div className="min-h-screen bg-background flex flex-col">
+
+        <GoogleAnalytics />
         <Header />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
@@ -63,6 +74,13 @@ function AppContent() {
             <Route path="/report-block-functionality" element={<ReportBlockFunctionality />} />
             <Route path="/safety-and-security" element={<SafetyAndSecurity />} />
             <Route path="/terms-of-service" element={<TermsOfService />} />
+
+            {/* Blog Routes */}
+            <Route path="/blog" element={<BlogIndex />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+
+            {/* 404 catch-all route - must be last */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
         <Footer />
@@ -73,9 +91,11 @@ function AppContent() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

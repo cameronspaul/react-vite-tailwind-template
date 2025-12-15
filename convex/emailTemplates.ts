@@ -1,296 +1,235 @@
 /**
- * Email Templates
- * 
- * This file contains all email HTML templates used throughout the application.
- * Each template is a function that accepts dynamic data and returns the HTML string.
+ * Email Templates - Refactored for conciseness
+ * All templates use a shared layout and parameterized content.
  */
 
-// Site URL for links in emails
-const getSiteUrl = () => process.env.SITE_URL || "https://yourapp.com";
-
-/**
- * Base email wrapper with consistent styling
- */
-const emailWrapper = (content: string) => `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  </head>
-  <body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f5; padding: 40px 20px;">
-      <tr>
-        <td align="center">
-          <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 480px; background-color: #ffffff; border-radius: 8px; border: 1px solid #e4e4e7;">
-            ${content}
-          </table>
-        </td>
-      </tr>
-    </table>
-  </body>
-</html>
-`;
-
-/**
- * Standard header component
- */
-const standardHeader = (title: string) => `
-<tr>
-  <td style="padding: 32px 32px 24px 32px; text-align: center; border-bottom: 1px solid #e4e4e7;">
-    <h1 style="margin: 0; font-size: 20px; font-weight: 600; color: #18181b;">
-      ${title}
-    </h1>
-  </td>
-</tr>
-`;
-
-/**
- * Gradient header component (for premium/celebration emails)
- */
-const gradientHeader = (emoji: string, title: string) => `
-<tr>
-  <td style="padding: 32px 32px 24px 32px; text-align: center; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); border-radius: 8px 8px 0 0;">
-    <div style="font-size: 48px; margin-bottom: 12px;">${emoji}</div>
-    <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff;">
-      ${title}
-    </h1>
-  </td>
-</tr>
-`;
-
-/**
- * Standard footer component
- */
-const standardFooter = (text: string = "Questions? Just reply to this email.") => `
-<tr>
-  <td style="padding: 24px 32px; border-top: 1px solid #e4e4e7; text-align: center;">
-    <p style="margin: 0; font-size: 12px; color: #71717a;">
-      ${text}
-    </p>
-  </td>
-</tr>
-`;
-
-/**
- * Standard button component
- */
-const standardButton = (text: string, href: string) => `
-<table width="100%" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="center">
-      <a href="${href}" style="display: inline-block; padding: 10px 24px; background-color: #18181b; color: #fafafa; text-decoration: none; font-size: 14px; font-weight: 500; border-radius: 6px;">
-        ${text}
-      </a>
-    </td>
-  </tr>
-</table>
-`;
-
-/**
- * Gradient button component (for premium emails)
- */
-const gradientButton = (text: string, href: string) => `
-<table width="100%" cellpadding="0" cellspacing="0">
-  <tr>
-    <td align="center">
-      <a href="${href}" style="display: inline-block; padding: 12px 28px; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;">
-        ${text}
-      </a>
-    </td>
-  </tr>
-</table>
-`;
-
-/**
- * Paragraph component
- */
-const paragraph = (text: string) => `
-<p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #3f3f46;">
-  ${text}
-</p>
-`;
-
-// ============================================================================
-// EMAIL TEMPLATES
-// ============================================================================
-
-/**
- * Welcome email for new users
- */
-export const welcomeEmail = (args: { name?: string }) => {
-    const userName = args.name || "there";
-    const siteUrl = getSiteUrl();
-
-    const content = `
-    ${standardHeader(`Welcome, ${userName}`)}
-    <tr>
-      <td style="padding: 32px;">
-        ${paragraph("Thanks for signing up! Your account is ready to go.")}
-        ${paragraph("Get started by exploring the app and checking out our features.")}
-        ${standardButton("Open App", siteUrl)}
-      </td>
-    </tr>
-    ${standardFooter()}
-  `;
-
-    return {
-        subject: "Welcome aboard 👋",
-        html: emailWrapper(content),
-    };
+// Brand configuration
+const BRAND = {
+  name: "Your App Name",
+  website: "https://yourapp.com",
+  supportEmail: "support@yourapp.com",
+  primaryColor: "#e5e5e5",
+  accentColor: "#d4d4d4",
+  backgroundColor: "#1a1a1a",
+  cardBackground: "#262626",
+  textColor: "#fafafa",
+  mutedColor: "#a3a3a3",
+  borderColor: "rgba(255, 255, 255, 0.1)",
 };
 
-/**
- * Premium welcome email when user upgrades to premium
- */
-export const premiumWelcomeEmail = (args: {
-    name?: string;
-    productName?: string;
-    isLifetime?: boolean;
-}) => {
-    const userName = args.name || "there";
-    const planName = args.productName || "Premium";
-    const siteUrl = getSiteUrl();
-    const isLifetimePlan = args.isLifetime || false;
+// Base email styles
+const baseStyles = `
+  body { margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: ${BRAND.backgroundColor}; color: ${BRAND.textColor}; line-height: 1.6; }
+  .container { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+  .card { background-color: ${BRAND.cardBackground}; border-radius: 12px; border: 1px solid ${BRAND.borderColor}; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+  .header { text-align: center; margin-bottom: 32px; }
+  .brand-name { font-size: 24px; font-weight: 700; color: ${BRAND.textColor}; margin: 0; }
+  h1 { font-size: 28px; font-weight: 700; color: ${BRAND.textColor}; margin: 0 0 16px; text-align: center; }
+  h2 { font-size: 20px; font-weight: 600; color: ${BRAND.textColor}; margin: 24px 0 12px; }
+  p { color: ${BRAND.mutedColor}; margin: 0 0 16px; font-size: 16px; }
+  .highlight { color: ${BRAND.primaryColor}; font-weight: 600; }
+  .button { display: inline-block; background-color: ${BRAND.primaryColor}; color: ${BRAND.backgroundColor} !important; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 16px; margin: 24px 0; }
+  .button-container { text-align: center; }
+  .divider { border: none; border-top: 1px solid ${BRAND.borderColor}; margin: 32px 0; }
+  .footer { text-align: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid ${BRAND.borderColor}; }
+  .footer p { font-size: 14px; color: ${BRAND.mutedColor}; margin: 8px 0; }
+  .footer a { color: ${BRAND.primaryColor}; text-decoration: none; }
+  .feature-item { display: flex; align-items: center; margin: 12px 0; color: ${BRAND.mutedColor}; }
+  .feature-icon { color: ${BRAND.primaryColor}; margin-right: 12px; font-size: 18px; }
+  .order-details { background-color: rgba(255, 255, 255, 0.05); border: 1px solid ${BRAND.borderColor}; border-radius: 8px; padding: 20px; margin: 24px 0; }
+  .order-table { width: 100%; border-collapse: collapse; }
+  .order-table td { border-bottom: 1px solid ${BRAND.borderColor}; padding: 12px 0; font-size: 14px; color: ${BRAND.textColor}; }
+  .order-table tr:last-child td { border-bottom: none; }
+  .order-table td:first-child { color: ${BRAND.mutedColor}; text-align: left; width: 40%; }
+  .order-table td:last-child { text-align: right; font-weight: 500; }
+  .feature-list { margin: 16px 0; padding: 0; list-style: none; }
+`;
 
-    const subscriptionText = isLifetimePlan
-        ? "You now have lifetime access to all premium features!"
-        : "Your subscription is now active and you have access to all premium features.";
+// Wrap content in base layout
+function wrapInLayout(content: string, previewText = ""): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${BRAND.name}</title>
+  <style>${baseStyles}</style>
+</head>
+<body>
+  ${previewText ? `<div style="display:none;max-height:0;overflow:hidden;">${previewText}</div>` : ""}
+  <div class="container"><div class="card">
+    <div class="header"><p class="brand-name">${BRAND.name}</p></div>
+    ${content}
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} ${BRAND.name}. All rights reserved.</p>
+      <p><a href="${BRAND.website}">Website</a> • <a href="mailto:${BRAND.supportEmail}">Contact Support</a></p>
+    </div>
+  </div></div>
+</body>
+</html>`.trim();
+}
 
-    const content = `
-    ${gradientHeader("🎉", `Welcome to ${planName}, ${userName}!`)}
-    <tr>
-      <td style="padding: 32px;">
-        ${paragraph(`Thank you for upgrading! ${subscriptionText}`)}
-        
-        <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin: 24px 0;">
-          <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #18181b;">
-            What's included:
-          </h3>
-          <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: #52525b;">
-            <li>Access to all premium features</li>
-            <li>Priority customer support</li>
-            <li>Early access to new features</li>
-            <li>Exclusive member benefits</li>
-          </ul>
-        </div>
-        
-        ${gradientButton("Start Exploring", siteUrl)}
-      </td>
-    </tr>
-    ${standardFooter("Need help? Reply to this email and we'll be happy to assist.")}
-  `;
+// Helper: Generate feature list HTML
+const featureList = (items: string[]) =>
+  `<ul class="feature-list">${items.map(i => `<li class="feature-item"><span class="feature-icon">✓</span><span>${i}</span></li>`).join("")}</ul>`;
 
-    return {
-        subject: `Welcome to ${planName}! 🎉`,
-        html: emailWrapper(content),
-    };
+// Helper: Generate order details table
+const orderTable = (rows: [string, string][]) =>
+  `<div class="order-details"><table class="order-table">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table></div>`;
+
+// ============================================
+// EMAIL TYPES & PARAMS
+// ============================================
+export type EmailType = "welcome" | "premium_monthly" | "premium_quarterly" | "premium_semiannual" | "premium_lifetime" | "credit_bundle" | "generic_purchase";
+
+export interface WelcomeEmailParams { userName: string; email: string; }
+export interface PurchaseEmailParams { userName: string; email: string; productName: string; productDescription?: string; amount: string; currency: string; orderId?: string; purchaseDate?: string; }
+export interface CreditBundleEmailParams extends PurchaseEmailParams { credits?: number; bundleName?: string; }
+
+// ============================================
+// WELCOME EMAIL
+// ============================================
+export const getWelcomeEmailSubject = () => `Welcome to ${BRAND.name}!`;
+
+export function getWelcomeEmailHtml({ userName }: WelcomeEmailParams): string {
+  return wrapInLayout(`
+    <h1>Welcome to ${BRAND.name}!</h1>
+    <p style="text-align: center; font-size: 18px;">Hey <span class="highlight">${userName || "there"}</span>, we're thrilled to have you on board!</p>
+    <hr class="divider">
+    <h2>Here's what you can do next:</h2>
+    ${featureList(["Explore our premium features and tools", "Set up your profile and preferences", "Check out our getting started guide", "Connect with our community"])}
+    <div class="button-container"><a href="${BRAND.website}" class="button">Get Started →</a></div>
+    <p style="text-align: center;">Questions? Contact us at <a href="mailto:${BRAND.supportEmail}" style="color: ${BRAND.primaryColor};">${BRAND.supportEmail}</a></p>
+  `, `Welcome to ${BRAND.name}! We're excited to have you.`);
+}
+
+// ============================================
+// PREMIUM PURCHASE EMAILS (Unified)
+// ============================================
+type PlanConfig = { subject: string; period: string; headline: string; features: string[]; preview: string };
+
+const PLAN_CONFIGS: Record<string, PlanConfig> = {
+  premium_monthly: {
+    subject: "Welcome to Premium!",
+    period: "/month",
+    headline: "your monthly subscription is now active!",
+    features: ["Unlimited access to all features", "Priority customer support", "Exclusive member perks", "Early access to new features"],
+    preview: "Your Premium subscription is now active!",
+  },
+  premium_quarterly: {
+    subject: "Welcome to Premium Quarterly!",
+    period: "/quarter",
+    headline: "your quarterly subscription is now active!",
+    features: ["Unlimited access to all features", "Priority customer support", "Exclusive member perks", "Save more with quarterly billing!"],
+    preview: "Your Premium Quarterly subscription is now active!",
+  },
+  premium_semiannual: {
+    subject: "Welcome to Premium Semiannual!",
+    period: "/6 months",
+    headline: "your 6-month subscription is now active!",
+    features: ["Unlimited access to all features", "Priority customer support", "Exclusive member perks", "Maximum savings with semiannual billing!"],
+    preview: "Your Premium Semiannual subscription is now active!",
+  },
+  premium_lifetime: {
+    subject: "Welcome to Premium Lifetime!",
+    period: " (one-time)",
+    headline: "you now have lifetime access!",
+    features: ["<strong>Forever access</strong> - no recurring payments!", "Unlimited access to all features", "Priority customer support", "All future updates included", "Exclusive lifetime member perks"],
+    preview: "Congratulations! You now have lifetime access!",
+  },
 };
 
-/**
- * Subscription cancellation email
- */
-export const cancellationEmail = () => {
-    const content = `
-    ${standardHeader("Subscription Cancelled")}
-    <tr>
-      <td style="padding: 32px;">
-        ${paragraph("We're sorry to see you go. Your subscription has been cancelled and will remain active until the end of your billing period.")}
-        ${paragraph("If you change your mind, you can always resubscribe from your account settings.")}
-      </td>
-    </tr>
-    ${standardFooter("Have feedback? Reply to this email and let us know how we can improve.")}
-  `;
+function getPremiumEmailHtml(type: string, params: PurchaseEmailParams): string {
+  const config = PLAN_CONFIGS[type] || PLAN_CONFIGS.premium_monthly;
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const rows: [string, string][] = [
+    ["Plan", productName || type.replace("premium_", "Premium ").replace(/_/g, " ")],
+    ["Amount", `${currency} ${amount}${config.period}`],
+  ];
+  if (orderId) rows.push(["Order ID", orderId]);
+  if (purchaseDate) rows.push(["Date", purchaseDate]);
 
-    return {
-        subject: "Your subscription has been cancelled",
-        html: emailWrapper(content),
-    };
-};
+  const title = type === "premium_lifetime" ? "Welcome to Premium Forever!" : "Welcome to Premium!";
+  return wrapInLayout(`
+    <h1>${title}</h1>
+    <p style="text-align: center; font-size: 18px;">Hi <span class="highlight">${userName || "there"}</span>, ${config.headline}</p>
+    ${orderTable(rows)}
+    <h2>Your ${type === "premium_lifetime" ? "Lifetime" : "Premium"} Benefits:</h2>
+    ${featureList(config.features)}
+    <div class="button-container"><a href="${BRAND.website}" class="button">Start Exploring →</a></div>
+    ${type === "premium_lifetime" ? `<p style="text-align: center; font-size: 14px;">Thank you for believing in us! We're honored to have you as a lifetime member.</p>` : ""}
+  `, config.preview);
+}
 
-/**
- * Password reset email
- */
-export const passwordResetEmail = (args: { resetLink: string }) => {
-    const content = `
-    ${standardHeader("Reset Your Password")}
-    <tr>
-      <td style="padding: 32px;">
-        ${paragraph("We received a request to reset your password. Click the button below to choose a new password.")}
-        ${standardButton("Reset Password", args.resetLink)}
-        ${paragraph("If you didn't request this, you can safely ignore this email. The link will expire in 1 hour.")}
-      </td>
-    </tr>
-    ${standardFooter("Need help? Reply to this email.")}
-  `;
+// Export individual functions for backwards compatibility
+export const getPremiumMonthlyEmailSubject = () => PLAN_CONFIGS.premium_monthly.subject;
+export const getPremiumMonthlyEmailHtml = (p: PurchaseEmailParams) => getPremiumEmailHtml("premium_monthly", p);
+export const getPremiumQuarterlyEmailSubject = () => PLAN_CONFIGS.premium_quarterly.subject;
+export const getPremiumQuarterlyEmailHtml = (p: PurchaseEmailParams) => getPremiumEmailHtml("premium_quarterly", p);
+export const getPremiumSemiannualEmailSubject = () => PLAN_CONFIGS.premium_semiannual.subject;
+export const getPremiumSemiannualEmailHtml = (p: PurchaseEmailParams) => getPremiumEmailHtml("premium_semiannual", p);
+export const getPremiumLifetimeEmailSubject = () => PLAN_CONFIGS.premium_lifetime.subject;
+export const getPremiumLifetimeEmailHtml = (p: PurchaseEmailParams) => getPremiumEmailHtml("premium_lifetime", p);
 
-    return {
-        subject: "Reset your password",
-        html: emailWrapper(content),
-    };
-};
+// ============================================
+// CREDIT BUNDLE EMAIL
+// ============================================
+export const getCreditBundleEmailSubject = (credits = 0) => `Your ${credits} Credits Have Been Added!`;
 
-/**
- * Email verification email
- */
-export const verificationEmail = (args: { verificationLink: string }) => {
-    const content = `
-    ${standardHeader("Verify Your Email")}
-    <tr>
-      <td style="padding: 32px;">
-        ${paragraph("Please verify your email address by clicking the button below.")}
-        ${standardButton("Verify Email", args.verificationLink)}
-        ${paragraph("If you didn't create an account, you can safely ignore this email.")}
-      </td>
-    </tr>
-    ${standardFooter()}
-  `;
+export function getCreditBundleEmailHtml(params: CreditBundleEmailParams): string {
+  const { userName, productName, amount, currency, orderId, purchaseDate, credits, bundleName } = params;
+  const rows: [string, string][] = [
+    ["Bundle", bundleName || productName || "Credit Bundle"],
+    ["Credits Added", `<strong>${credits || "N/A"} Credits</strong>`],
+    ["Amount Paid", `${currency} ${amount}`],
+  ];
+  if (orderId) rows.push(["Order ID", orderId]);
+  if (purchaseDate) rows.push(["Date", purchaseDate]);
 
-    return {
-        subject: "Verify your email address",
-        html: emailWrapper(content),
-    };
-};
+  return wrapInLayout(`
+    <h1>Credits Added to Your Account!</h1>
+    <p style="text-align: center; font-size: 18px;">Hi <span class="highlight">${userName || "there"}</span>, your credits have been added!</p>
+    ${orderTable(rows)}
+    <h2>How to Use Your Credits:</h2>
+    ${featureList(["Credits are available immediately in your account", "Use credits for premium features and actions", "Your credits <strong>never expire</strong>", "Check your balance anytime in your dashboard"])}
+    <div class="button-container"><a href="${BRAND.website}" class="button">Go to Dashboard →</a></div>
+  `, `${credits || "Your"} credits have been added to your account!`);
+}
 
-/**
- * Payment confirmation email
- */
-export const paymentConfirmationEmail = (args: {
-    name?: string;
-    amount: string;
-    productName: string;
-    receiptUrl?: string;
-}) => {
-    const userName = args.name || "there";
-    const siteUrl = getSiteUrl();
+// ============================================
+// GENERIC PURCHASE EMAIL
+// ============================================
+export const getGenericPurchaseEmailSubject = () => `Thank you for your purchase!`;
 
-    const content = `
-    ${gradientHeader("✅", "Payment Confirmed")}
-    <tr>
-      <td style="padding: 32px;">
-        ${paragraph(`Hi ${userName}, your payment has been successfully processed!`)}
-        
-        <div style="background-color: #f4f4f5; border-radius: 8px; padding: 20px; margin: 24px 0;">
-          <table width="100%" style="font-size: 14px; color: #3f3f46;">
-            <tr>
-              <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7;">Product</td>
-              <td style="padding: 8px 0; border-bottom: 1px solid #e4e4e7; text-align: right; font-weight: 600; color: #18181b;">${args.productName}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">Amount</td>
-              <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #18181b;">${args.amount}</td>
-            </tr>
-          </table>
-        </div>
-        
-        ${args.receiptUrl ? standardButton("View Receipt", args.receiptUrl) : standardButton("Open App", siteUrl)}
-      </td>
-    </tr>
-    ${standardFooter("Questions about your payment? Reply to this email.")}
-  `;
+export function getGenericPurchaseEmailHtml(params: PurchaseEmailParams): string {
+  const { userName, productName, amount, currency, orderId, purchaseDate } = params;
+  const rows: [string, string][] = [["Product", productName || "Product"], ["Amount Paid", `${currency} ${amount}`]];
+  if (orderId) rows.push(["Order ID", orderId]);
+  if (purchaseDate) rows.push(["Date", purchaseDate]);
 
-    return {
-        subject: `Payment confirmed for ${args.productName}`,
-        html: emailWrapper(content),
-    };
-};
+  return wrapInLayout(`
+    <h1>Thank You for Your Purchase!</h1>
+    <p style="text-align: center; font-size: 18px;">Hi <span class="highlight">${userName || "there"}</span>, your purchase has been confirmed!</p>
+    ${orderTable(rows)}
+    <p style="text-align: center;">Your purchase is now available in your account. If you have any questions, please don't hesitate to contact us.</p>
+    <div class="button-container"><a href="${BRAND.website}" class="button">Go to Dashboard →</a></div>
+  `, "Your purchase has been confirmed!");
+}
+
+// ============================================
+// UNIFIED EMAIL CONTENT GETTER
+// ============================================
+export function getEmailContent(type: EmailType, params: WelcomeEmailParams | PurchaseEmailParams): { subject: string; html: string } {
+  switch (type) {
+    case "welcome":
+      return { subject: getWelcomeEmailSubject(), html: getWelcomeEmailHtml(params as WelcomeEmailParams) };
+    case "premium_monthly":
+    case "premium_quarterly":
+    case "premium_semiannual":
+    case "premium_lifetime":
+      return { subject: PLAN_CONFIGS[type].subject, html: getPremiumEmailHtml(type, params as PurchaseEmailParams) };
+    case "credit_bundle":
+      return { subject: getCreditBundleEmailSubject((params as CreditBundleEmailParams).credits), html: getCreditBundleEmailHtml(params as CreditBundleEmailParams) };
+    default:
+      return { subject: getGenericPurchaseEmailSubject(), html: getGenericPurchaseEmailHtml(params as PurchaseEmailParams) };
+  }
+}

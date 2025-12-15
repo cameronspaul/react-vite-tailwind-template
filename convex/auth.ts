@@ -38,23 +38,29 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
   ],
   callbacks: {
     async afterUserCreatedOrUpdated(ctx, { userId, existingUserId }) {
+      // Check if this is a new user (not an existing one being updated)
+      const isNewUser = !existingUserId;
+
+      // Get the user data
       const user = await ctx.db.get(userId);
 
-      // Set the creation date when a new user is created
-      if (user && !user.creationDate) {
-        await ctx.db.patch(userId, {
-          creationDate: Date.now(),
-        });
-      }
+      if (user) {
+        // Set the creation date if not already set
+        if (!user.creationDate) {
+          await ctx.db.patch(userId, {
+            creationDate: Date.now(),
+          });
+        }
 
-      // Send welcome email only for new users (not updates)
-      const isNewUser = !existingUserId;
-      if (isNewUser && user?.email) {
-        // Schedule the welcome email asynchronously (non-blocking)
-        await ctx.scheduler.runAfter(0, internal.emails.sendWelcomeEmail, {
-          email: user.email,
-          name: user.name,
-        });
+        // Send welcome email only for new users
+        if (isNewUser && user.email) {
+          // Schedule the welcome email to be sent asynchronously
+          await ctx.scheduler.runAfter(0, internal.resend.sendWelcomeEmail, {
+            to: user.email,
+            userName: user.name || "there",
+          });
+          console.log(`Welcome email scheduled for new user: ${user.email}`);
+        }
       }
     },
   },

@@ -1,105 +1,55 @@
 import type { Product } from "./PriceCard";
 
-export type ProductWithCheckout = Product & { checkoutUrl?: string };
-
-const checkoutLinks = {
-  weekly: import.meta.env.VITE_CHECKOUT_LINK_WEEKLY as string | undefined,
-  monthly: import.meta.env.VITE_CHECKOUT_LINK_MONTHLY as string | undefined,
-  quarterly: import.meta.env.VITE_CHECKOUT_LINK_QUARTERLY as string | undefined,
-  semiannual: import.meta.env.VITE_CHECKOUT_LINK_SEMIANNUAL as string | undefined,
-  lifetime: import.meta.env.VITE_CHECKOUT_LINK_LIFETIME as string | undefined,
+export type ProductWithCheckout = Product & {
+  checkoutUrl?: string;
+  polarProductId?: string;
 };
 
-const buildPrice = (
-  productId: string,
+// Product IDs from environment
+const productIds = {
+  monthly: import.meta.env.VITE_POLAR_PRODUCT_ID_MONTHLY as string | undefined,
+  quarterly: import.meta.env.VITE_POLAR_PRODUCT_ID_QUARTERLY as string | undefined,
+  semiannual: import.meta.env.VITE_POLAR_PRODUCT_ID_SEMIANNUAL as string | undefined,
+  lifetime: import.meta.env.VITE_POLAR_PRODUCT_ID_LIFETIME as string | undefined,
+};
+
+// Factory function to create products with minimal boilerplate
+const createProduct = (
+  id: string,
+  name: string,
+  description: string,
   cents: number,
-  currency: string,
-  recurringInterval?: string | null
-) => ({
-  id: `${productId}-price`,
-  productId,
+  isRecurring: boolean,
+  interval: string | null,
+  productIdKey: keyof typeof productIds
+): ProductWithCheckout => ({
+  id,
+  name,
+  description,
+  isRecurring,
+  recurringInterval: interval,
+  medias: [],
+  metadata: {},
+  organizationId: "static",
   createdAt: "static",
   modifiedAt: null,
   isArchived: false,
-  priceAmount: cents,
-  priceCurrency: currency,
-  recurringInterval,
+  prices: [{
+    id: `${id}-price`,
+    productId: id,
+    createdAt: "static",
+    modifiedAt: null,
+    isArchived: false,
+    priceAmount: cents,
+    priceCurrency: "USD",
+    recurringInterval: interval,
+  }],
+  polarProductId: productIds[productIdKey],
 });
 
 export const staticProducts: ProductWithCheckout[] = [
-  {
-    id: "premium-weekly",
-    name: "Premium Weekly",
-    description: "Flexible weekly billing for short-term use.",
-    isRecurring: true,
-    recurringInterval: "week",
-    medias: [],
-    metadata: {},
-    organizationId: "static",
-    createdAt: "static",
-    modifiedAt: null,
-    isArchived: false,
-    prices: [buildPrice("premium-weekly", 999, "USD", "week")],
-    checkoutUrl: checkoutLinks.weekly,
-  },
-  {
-    id: "premium-monthly",
-    name: "Premium Monthly",
-    description: "Standard monthly subscription with full access.",
-    isRecurring: true,
-    recurringInterval: "month",
-    medias: [],
-    metadata: {},
-    organizationId: "static",
-    createdAt: "static",
-    modifiedAt: null,
-    isArchived: false,
-    prices: [buildPrice("premium-monthly", 2999, "USD", "month")],
-    checkoutUrl: checkoutLinks.monthly,
-  },
-  {
-    id: "premium-quarterly",
-    name: "Premium Quarterly",
-    description: "Quarterly billing with a small discount.",
-    isRecurring: true,
-    recurringInterval: "quarter",
-    medias: [],
-    metadata: {},
-    organizationId: "static",
-    createdAt: "static",
-    modifiedAt: null,
-    isArchived: false,
-    prices: [buildPrice("premium-quarterly", 7999, "USD", "quarter")],
-    checkoutUrl: checkoutLinks.quarterly,
-  },
-  {
-    id: "premium-semiannual",
-    name: "Premium Semiannual",
-    description: "Pay twice a year and save compared to monthly.",
-    isRecurring: true,
-    recurringInterval: "6 months",
-    medias: [],
-    metadata: {},
-    organizationId: "static",
-    createdAt: "static",
-    modifiedAt: null,
-    isArchived: false,
-    prices: [buildPrice("premium-semiannual", 14999, "USD", "6 months")],
-    checkoutUrl: checkoutLinks.semiannual,
-  },
-  {
-    id: "premium-lifetime",
-    name: "Lifetime Premium",
-    description: "One-time purchase; keep access forever.",
-    isRecurring: false,
-    recurringInterval: null,
-    medias: [],
-    metadata: {},
-    organizationId: "static",
-    createdAt: "static",
-    modifiedAt: null,
-    isArchived: false,
-    prices: [buildPrice("premium-lifetime", 5900, "USD", null)],
-    checkoutUrl: checkoutLinks.lifetime,
-  },
+  createProduct("premium-monthly", "Premium Monthly", "Standard monthly subscription with full access.", 2999, true, "month", "monthly"),
+  createProduct("premium-quarterly", "Premium Quarterly", "Quarterly billing with a small discount.", 7999, true, "quarter", "quarterly"),
+  createProduct("premium-semiannual", "Premium Semiannual", "Pay twice a year and save compared to monthly.", 14999, true, "6 months", "semiannual"),
+  createProduct("premium-lifetime", "Lifetime Premium", "One-time purchase; keep access forever.", 5900, false, null, "lifetime"),
 ];

@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useAction, useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { useBillingStatus } from "../hooks/useBillingStatus";
 import { Button } from "../components/ui/button";
 import {
@@ -10,59 +12,68 @@ import {
     CardHeader,
     CardTitle,
 } from "../components/ui/card";
-import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { toast } from "sonner";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
+
 import { Check, CheckCircle, AlertTriangle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
+import { PageSEO } from "../components/SEO";
+import { usePostHogAnalytics } from "../hooks/usePostHogAnalytics";
 
 // Credit packages configuration - customize these for your needs
+// All bundles use the same Polar product ID with "custom" price type
+// The actual price is set dynamically at checkout via the `amount` parameter
+// Add your Polar product ID in .env.local as VITE_POLAR_PRODUCT_ID_CREDITS
+const CREDITS_PRODUCT_ID = import.meta.env.VITE_POLAR_PRODUCT_ID_CREDITS as string | undefined;
+
 const creditPackages = [
     {
         id: "credits-100",
         name: "Starter Pack",
         credits: 100,
-        price: 999, // Price in cents
+        price: 999, // Price in cents ($9.99)
         currency: "USD",
-        description: "Perfect for trying out credits",
-        checkoutUrl: "", // Add your Polar checkout URL here
+        description: "Perfect for trying things out",
+        polarProductId: CREDITS_PRODUCT_ID,
         features: [
             "100 Credits",
+            "~$0.10 per credit",
             "Never expires",
-            "Use anytime",
         ],
         popular: false,
     },
     {
         id: "credits-300",
-        name: "Value Pack",
+        name: "Pro Pack",
         credits: 300,
-        price: 2499, // Price in cents
+        price: 2499, // Price in cents ($24.99)
         currency: "USD",
         description: "Best value for regular users",
-        checkoutUrl: "", // Add your Polar checkout URL here
+        polarProductId: CREDITS_PRODUCT_ID,
         features: [
             "300 Credits",
+            "~$0.08 per credit",
             "Save 17%",
             "Never expires",
-            "Priority support",
         ],
         popular: true,
     },
     {
         id: "credits-1000",
-        name: "Pro Pack",
+        name: "Power Pack",
         credits: 1000,
-        price: 6999, // Price in cents
+        price: 6999, // Price in cents ($69.99)
         currency: "USD",
         description: "For power users and teams",
-        checkoutUrl: "", // Add your Polar checkout URL here
+        polarProductId: CREDITS_PRODUCT_ID,
         features: [
             "1000 Credits",
+            "~$0.07 per credit",
             "Save 30%",
             "Never expires",
             "Priority support",
-            "Exclusive features",
         ],
         popular: false,
     },
@@ -72,6 +83,10 @@ export const CreditsPage = () => {
     const location = useLocation();
     const billing = useBillingStatus();
     const { refresh: refreshBilling } = billing;
+    const createCheckoutSession = useAction(api.polar.createCheckoutSession);
+    const balance = useQuery(api.credits.getBalance);
+    const { capture } = usePostHogAnalytics();
+    const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
     const billingReady = billing.status === "ready";
 
@@ -83,29 +98,10 @@ export const CreditsPage = () => {
     useEffect(() => {
         if (!showSuccess) return;
         void refreshBilling();
+        toast.success("Purchase Successful!", {
+            description: "Your credits will be added shortly.",
+        });
     }, [refreshBilling, showSuccess]);
-
-    const addPrefillParams = (
-        url: string,
-        email?: string | null,
-        name?: string | null
-    ) => {
-        if (!email || !url) {
-            return url;
-        }
-
-        try {
-            const parsed = new URL(url);
-            parsed.searchParams.set("customer_email", email);
-            if (name) {
-                parsed.searchParams.set("customer_name", name);
-            }
-            return parsed.toString();
-        } catch (error) {
-            console.error("Failed to prefill checkout link", error);
-            return url;
-        }
-    };
 
     const formatPrice = (amount: number | undefined, currency: string = "USD") => {
         if (amount === undefined) return "N/A";
@@ -116,33 +112,83 @@ export const CreditsPage = () => {
         }).format(amount / 100);
     };
 
+    // Handle checkout with custom amount for credit bundles
+    const handleCheckout = async (creditPackage: typeof creditPackages[0]) => {
+        if (!creditPackage.polarProductId) return;
+
+        capture('credits_checkout_started', {
+            bundle_id: creditPackage.id,
+            bundle_name: creditPackage.name,
+            credits: creditPackage.credits,
+            price: creditPackage.price,
+            current_balance: balance,
+        });
+
+        setLoadingProductId(creditPackage.id); // Track by bundle id since all use same product
+        try {
+            const result = await createCheckoutSession({
+                productId: creditPackage.polarProductId,
+                successUrl: `${window.location.origin}/credits?checkout_id={CHECKOUT_ID}`,
+                // Set custom price for the bundle (in cents)
+                amount: creditPackage.price,
+                // Include bundle info in metadata for order tracking
+                metadata: {
+                    bundle_id: creditPackage.id,
+                    credits: creditPackage.credits,
+                    bundle_name: creditPackage.name,
+                },
+            });
+            if ("url" in result) {
+                window.location.href = result.url;
+            } else {
+                console.error("Checkout error:", result.error);
+                capture('credits_checkout_error', { bundle_id: creditPackage.id, error: result.error });
+                toast.error("Checkout Failed", {
+                    description: result.error || "Unable to create checkout session. Please try again.",
+                });
+            }
+        } catch (error) {
+            console.error("Failed to create checkout session:", error);
+            capture('credits_checkout_error', { bundle_id: creditPackage.id, error: String(error) });
+            toast.error("Checkout Failed", {
+                description: "An unexpected error occurred. Please try again.",
+            });
+        } finally {
+            setLoadingProductId(null);
+        }
+    };
+
     const renderCheckoutCta = (
         creditPackage: typeof creditPackages[0],
         label: string,
         variant: "default" | "outline" | "ghost" | "secondary" = "default"
     ) => {
-        if (!creditPackage.checkoutUrl) {
+        if (!creditPackage.polarProductId) {
             return (
                 <Alert variant="destructive" className="mt-4">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                        Missing checkout URL.
+                        Missing product ID.
                     </AlertDescription>
                 </Alert>
             );
         }
 
-        const checkoutHref = addPrefillParams(
-            creditPackage.checkoutUrl,
-            billing.data?.email,
-            billing.data?.name ?? null
-        );
+        // Track loading by bundle id since all bundles share the same product id
+        const isLoading = loadingProductId === creditPackage.id;
 
         return (
-            <Button className="w-full" asChild variant={variant}>
-                <a href={checkoutHref}>
-                    {label}
-                </a>
+            <Button
+                className="w-full"
+                variant={variant}
+                disabled={isLoading || loadingProductId !== null}
+                onClick={() => handleCheckout(creditPackage)}
+            >
+                {isLoading ? (
+                    <Skeleton className="h-4 w-20" />
+                ) : (
+                    label
+                )}
             </Button>
         );
     };
@@ -200,7 +246,7 @@ export const CreditsPage = () => {
                         renderLoadingButton()
                     ) : !billing.data ? (
                         renderSignInButton()
-                    ) : creditPackage.checkoutUrl ? (
+                    ) : creditPackage.polarProductId ? (
                         renderCheckoutCta(creditPackage, `Buy ${creditPackage.credits} Credits`, isPopular ? "default" : "outline")
                     ) : (
                         <Button disabled variant="secondary" className="w-full">
@@ -213,63 +259,63 @@ export const CreditsPage = () => {
     };
 
     return (
-        <div className="container mx-auto px-4 py-16 max-w-6xl">
-            <div className="text-center mb-16 space-y-4">
-                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-                    Purchase Credits
-                </h1>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Credits can be used to unlock premium features and actions.
-                    No hidden fees.
-                </p>
-            </div>
+        <>
+            <PageSEO.Credits />
+            <div className="container mx-auto px-4 py-16 max-w-6xl">
+                <div className="text-center mb-16 space-y-4">
+                    <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+                        Purchase Credits
+                    </h1>
+                    {balance !== undefined && balance !== null && (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary/50 rounded-full text-foreground/80 font-medium">
+                            <CheckCircle className="h-4 w-4 text-primary" />
+                            Current Balance: {balance} Credits
+                        </div>
+                    )}
+                    <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                        Credits can be used to unlock premium features and actions.
+                        No hidden fees.
+                    </p>
+                </div>
 
-            {showSuccess && (
-                <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
-                    <CheckCircle className="h-4 w-4 text-primary" />
-                    <AlertTitle>Purchase Successful!</AlertTitle>
-                    <AlertDescription>Your credits have been added to your account.</AlertDescription>
-                </Alert>
-            )}
 
-            {/* Credits Packages Grid */}
-            <div className="mb-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-                    {creditPackages.map((creditPackage) => (
-                        <CreditPackageCard key={creditPackage.id} creditPackage={creditPackage} />
-                    ))}
+
+                {/* Credits Packages Grid */}
+                <div className="mb-16">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+                        {creditPackages.map((creditPackage) => (
+                            <CreditPackageCard key={creditPackage.id} creditPackage={creditPackage} />
+                        ))}
+                    </div>
+                </div>
+
+                {/* Info Section */}
+                <div className="max-w-3xl mx-auto">
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-semibold">How Credits Work</h2>
+                        <p className="text-muted-foreground">Buy once, use anytime.</p>
+                    </div>
+                    <Card className="flex flex-col border-2 border-muted bg-muted/20">
+                        <CardContent>
+                            <ul className="space-y-2 text-sm text-muted-foreground">
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />
+                                    <span>Credits never expire — use them whenever you need</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />
+                                    <span>Buy larger packs for better value per credit</span>
+                                </li>
+                                <li className="flex items-center gap-2">
+                                    <Check className="h-4 w-4 text-primary" />
+                                    <span>Instant delivery to your account</span>
+                                </li>
+                            </ul>
+                        </CardContent>
+                    </Card>
                 </div>
             </div>
-
-            {/* Info Section */}
-            <div className="max-w-3xl mx-auto">
-                <div className="text-center mb-8">
-                    <h2 className="text-2xl font-semibold">How Credits Work</h2>
-                    <p className="text-muted-foreground">Buy once, use anytime.</p>
-                </div>
-                <Card className="flex flex-col border-2 border-muted bg-muted/20">
-                    <CardContent>
-                        <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Credits never expire — use them whenever you need</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Buy larger packs for better value per credit</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Instant delivery to your account</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <Check className="h-4 w-4 text-primary" />
-                                <span>Spend credits on premium features and actions</span>
-                            </li>
-                        </ul>
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+        </>
     );
 };
+

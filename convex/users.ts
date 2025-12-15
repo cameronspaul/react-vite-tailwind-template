@@ -1,6 +1,19 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { checkRateLimit } from "./rateLimit";
+
+// Internal query to get user ID by email (used by webhooks)
+export const getUserIdByEmail = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
+    return user?._id ?? null;
+  },
+});
 
 // Get the current authenticated user's profile
 export const getCurrentUser = query({
@@ -33,6 +46,12 @@ export const updateProfile = mutation({
     const userId = await getAuthUserId(ctx);
     if (userId === null) {
       throw new Error("Client is not authenticated");
+    }
+
+    // Anti-spam rate limiting for profile updates
+    const rateLimit = await checkRateLimit(ctx, userId, "profile_update");
+    if (!rateLimit.allowed) {
+      throw new Error(rateLimit.message);
     }
 
     // Filter out undefined values to only update provided fields
@@ -93,6 +112,22 @@ export const deleteUser = mutation({
       .collect();
     for (const account of authAccounts) {
       await ctx.db.delete(account._id);
+    }
+
+    // Delete all credits for this user
+    const credits = await ctx.db.query("credits")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    if (credits) {
+      await ctx.db.delete(credits._id);
+    }
+
+    // Delete all feedback for this user
+    const feedbackList = await ctx.db.query("feedback")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+    for (const feedback of feedbackList) {
+      await ctx.db.delete(feedback._id);
     }
 
     // Finally, delete the user record

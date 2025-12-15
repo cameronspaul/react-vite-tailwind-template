@@ -2,11 +2,15 @@ import { Polar } from "@convex-dev/polar";
 import { customersGetState } from "@polar-sh/sdk/funcs/customersGetState";
 import { ordersList } from "@polar-sh/sdk/funcs/ordersList";
 import { customersList } from "@polar-sh/sdk/funcs/customersList";
+import { checkoutsCreate } from "@polar-sh/sdk/funcs/checkoutsCreate";
+import { subscriptionsList } from "@polar-sh/sdk/funcs/subscriptionsList";
+import { subscriptionsRevoke } from "@polar-sh/sdk/funcs/subscriptionsRevoke";
 import type { CustomerState } from "@polar-sh/sdk/models/components/customerstate";
 import { api, components } from "./_generated/api";
-import { action, query } from "./_generated/server";
+import { action, internalAction, query } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
+import { v } from "convex/values";
 
 const fetchAuthenticatedUser = async (
   ctx: any
@@ -231,5 +235,135 @@ export const getBillingStatus = action({
       isLifetime: hasLifetime,
       hasSubscription: normalizedHasSubscription,
     };
+  },
+});
+
+// Create a Polar checkout session using the Checkout API
+// Supports custom pricing via the `amount` parameter (in cents) for products with custom price types
+export const createCheckoutSession = action({
+  args: {
+    productId: v.string(),
+    successUrl: v.optional(v.string()),
+    // Amount in cents - used for custom-priced products like credit bundles
+    // Only works if the Polar product has a "custom" price type
+    amount: v.optional(v.number()),
+    // Optional metadata to include with the checkout (will be copied to the order)
+    metadata: v.optional(v.record(v.string(), v.union(v.string(), v.number(), v.boolean()))),
+  },
+  handler: async (ctx, { productId, successUrl, amount, metadata }): Promise<{ url: string } | { error: string }> => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) {
+      return { error: "User not authenticated" };
+    }
+
+    const user = await ctx.runQuery(api.users.getUserById, { userId });
+    if (!user) {
+      return { error: "User not found" };
+    }
+
+    // Backfill customer if they already exist in Polar by email
+    await backfillExistingCustomer(ctx, userId, user.email);
+
+    try {
+      const checkoutParams: Parameters<typeof checkoutsCreate>[1] = {
+        products: [productId],
+        customerEmail: user.email ?? undefined,
+        customerName: user.name ?? undefined,
+        successUrl: successUrl ?? `${process.env.SITE_URL ?? "http://localhost:5173"}/pricing?checkout_id={CHECKOUT_ID}`,
+      };
+
+      // For custom-priced products (like credit bundles), use the prices parameter
+      // to define ad-hoc pricing with a fixed amount for this checkout session.
+      // The prices parameter is a Record mapping product IDs to arrays of price definitions.
+      if (amount !== undefined) {
+        // Ad-hoc pricing: define a custom fixed price for this checkout
+        checkoutParams.prices = {
+          [productId]: [
+            {
+              amountType: "fixed" as const,
+              priceAmount: amount,
+              priceCurrency: "usd",
+            },
+          ],
+        };
+      }
+
+      // Add metadata if provided
+      if (metadata !== undefined) {
+        checkoutParams.metadata = metadata;
+      }
+
+      const result = await checkoutsCreate(polar.polar, checkoutParams);
+
+      if (!result.ok) {
+        console.error("Failed to create checkout session:", result.error);
+        return { error: "Failed to create checkout session" };
+      }
+
+      return { url: result.value.url };
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      return { error: "Failed to create checkout session" };
+    }
+  },
+});
+
+// Cancel ALL active subscriptions for a customer (used when lifetime is purchased)
+export const cancelAllSubscriptionsForCustomer = internalAction({
+  args: {
+    customerId: v.string(),
+  },
+  handler: async (ctx, { customerId }): Promise<{ cancelled: number; errors: string[] }> => {
+    const cancelled: string[] = [];
+    const errors: string[] = [];
+
+    try {
+      // Get all subscriptions for this customer
+      const [subsIterator] = await subscriptionsList(polar.polar, {
+        customerId: customerId,
+        active: true,
+        limit: 100,
+      }).$inspect();
+
+      for await (const page of subsIterator) {
+        if (!page.ok) {
+          console.error("Error fetching subscriptions page:", page.error);
+          errors.push(`Failed to fetch subscriptions: ${page.error}`);
+          continue;
+        }
+
+        for (const subscription of page.value.result.items) {
+          // Only cancel recurring subscriptions that are not already cancelled
+          if (
+            subscription.status === "active" &&
+            subscription.recurringInterval !== null // This means it's a recurring subscription
+          ) {
+            try {
+              const revokeResult = await subscriptionsRevoke(polar.polar, {
+                id: subscription.id,
+              });
+
+              if (revokeResult.ok) {
+                console.log(`Successfully cancelled subscription ${subscription.id}`);
+                cancelled.push(subscription.id);
+              } else {
+                console.error(`Failed to cancel subscription ${subscription.id}:`, revokeResult.error);
+                errors.push(`Failed to cancel ${subscription.id}: ${revokeResult.error}`);
+              }
+            } catch (revokeError) {
+              console.error(`Error revoking subscription ${subscription.id}:`, revokeError);
+              errors.push(`Error revoking ${subscription.id}: ${revokeError}`);
+            }
+          }
+        }
+      }
+
+      console.log(`Cancelled ${cancelled.length} subscriptions for customer ${customerId}`);
+      return { cancelled: cancelled.length, errors };
+    } catch (error) {
+      console.error("Error cancelling subscriptions for customer:", error);
+      errors.push(`Error: ${error}`);
+      return { cancelled: 0, errors };
+    }
   },
 });

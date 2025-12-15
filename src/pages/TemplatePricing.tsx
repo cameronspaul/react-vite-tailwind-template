@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { CustomerPortalLink } from "@convex-dev/polar/react";
+import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { staticProducts, type ProductWithCheckout } from "../components/staticProducts";
 import { useBillingStatus } from "../hooks/useBillingStatus";
@@ -13,16 +14,22 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { toast } from "sonner";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
 import { Check, AlertTriangle, CheckCircle } from "lucide-react";
 import { Separator } from "../components/ui/separator";
+import { PageSEO } from "../components/SEO";
+import { usePostHogAnalytics } from "../hooks/usePostHogAnalytics";
 
 export const ProductList = () => {
   const location = useLocation();
   const billing = useBillingStatus();
   const { refresh: refreshBilling } = billing;
+  const createCheckoutSession = useAction(api.polar.createCheckoutSession);
+  const { capture } = usePostHogAnalytics();
+  const [loadingProductId, setLoadingProductId] = useState<string | null>(null);
 
   const billingReady = billing.status === "ready";
   const hasLifetime = billingReady && billing.isLifetime;
@@ -47,29 +54,10 @@ export const ProductList = () => {
   useEffect(() => {
     if (!showSuccess) return;
     void refreshBilling();
+    toast.success("Payment Successful!", {
+      description: "Your account has been upgraded.",
+    });
   }, [refreshBilling, showSuccess]);
-
-  const addPrefillParams = (
-    url: string,
-    email?: string | null,
-    name?: string | null
-  ) => {
-    if (!email) {
-      return url;
-    }
-
-    try {
-      const parsed = new URL(url);
-      parsed.searchParams.set("customer_email", email);
-      if (name) {
-        parsed.searchParams.set("customer_name", name);
-      }
-      return parsed.toString();
-    } catch (error) {
-      console.error("Failed to prefill checkout link", error);
-      return url;
-    }
-  };
 
   const formatPrice = (amount: number | undefined, currency: string = "USD") => {
     if (amount === undefined) return "N/A";
@@ -80,33 +68,66 @@ export const ProductList = () => {
     }).format(amount / 100);
   };
 
+  const handleCheckout = async (polarProductId: string, productName?: string, price?: number) => {
+    capture('checkout_started', {
+      product_id: polarProductId,
+      product_name: productName,
+      price: price,
+      location: 'pricing_page'
+    });
+    setLoadingProductId(polarProductId);
+    try {
+      const result = await createCheckoutSession({ productId: polarProductId });
+      if ("url" in result) {
+        window.location.href = result.url;
+      } else {
+        console.error("Checkout error:", result.error);
+        capture('checkout_error', { product_id: polarProductId, error: result.error });
+        toast.error("Checkout Failed", {
+          description: result.error || "Unable to create checkout session. Please try again.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create checkout session:", error);
+      capture('checkout_error', { product_id: polarProductId, error: String(error) });
+      toast.error("Checkout Failed", {
+        description: "An unexpected error occurred. Please try again.",
+      });
+    } finally {
+      setLoadingProductId(null);
+    }
+  };
+
   const renderCheckoutCta = (
     product: ProductWithCheckout,
     label: string,
     variant: "default" | "outline" | "ghost" | "secondary" = "default"
   ) => {
-    if (!product.checkoutUrl) {
+    if (!product.polarProductId) {
       return (
         <Alert variant="destructive" className="mt-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            Missing checkout URL.
+            Missing product ID.
           </AlertDescription>
         </Alert>
       );
     }
 
-    const checkoutHref = addPrefillParams(
-      product.checkoutUrl,
-      billing.data?.email,
-      billing.data?.name ?? null
-    );
+    const isLoading = loadingProductId === product.polarProductId;
 
     return (
-      <Button className="w-full" asChild variant={variant}>
-        <a href={checkoutHref}>
-          {label}
-        </a>
+      <Button
+        className="w-full"
+        variant={variant}
+        disabled={isLoading}
+        onClick={() => handleCheckout(product.polarProductId!, product.name, product.prices[0]?.priceAmount)}
+      >
+        {isLoading ? (
+          <Skeleton className="h-4 w-20" />
+        ) : (
+          label
+        )}
       </Button>
     );
   };
@@ -246,51 +267,57 @@ export const ProductList = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-16 max-w-6xl">
-      <div className="text-center mb-16 space-y-4">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Simple, transparent pricing
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Choose the plan that's right for you.
-          No hidden fees.
-        </p>
+    <>
+      <PageSEO.Pricing />
+      <div className="container mx-auto px-4 py-16 max-w-6xl">
+        <div className="text-center mb-16 space-y-4">
+          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            Simple, transparent pricing
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Choose the plan that's right for you.
+            No hidden fees.
+          </p>
+        </div>
+
+
+
+        {billing.isPremium && (
+          <div className="flex justify-center mb-12">
+            <Button asChild variant="outline">
+              <CustomerPortalLink polarApi={{ generateCustomerPortalUrl: api.polar.generateCustomerPortalUrl }}>
+                Open Customer Portal
+              </CustomerPortalLink>
+            </Button>
+          </div>
+        )}
+
+        {/* Subscription Plans */}
+        {recurringProducts.length > 0 && (
+          <div className="mb-16">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+              {recurringProducts.map((product) => (
+                <SubscriptionCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Lifetime Plan Section */}
+        {lifetimeProducts.length > 0 && (
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold">Lifetime Access</h2>
+              <p className="text-muted-foreground">Pay once, own it forever.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
+              {lifetimeProducts.map((product) => (
+                <LifetimeCard key={product.id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-
-      {showSuccess && (
-        <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
-          <CheckCircle className="h-4 w-4 text-primary" />
-          <AlertTitle>Payment Successful!</AlertTitle>
-          <AlertDescription>Your account has been upgraded.</AlertDescription>
-        </Alert>
-      )}
-
-
-      {/* Subscription Plans */}
-      {recurringProducts.length > 0 && (
-        <div className="mb-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
-            {recurringProducts.map((product) => (
-              <SubscriptionCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Lifetime Plan Section */}
-      {lifetimeProducts.length > 0 && (
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-semibold">Lifetime Access</h2>
-            <p className="text-muted-foreground">Pay once, own it forever.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
-            {lifetimeProducts.map((product) => (
-              <LifetimeCard key={product.id} product={product} />
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 };

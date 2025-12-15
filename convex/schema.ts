@@ -19,7 +19,48 @@ const schema = defineSchema({
   })
     .index("email", ["email"])
     .index("by_provider", ["provider"]),
-  // Your other tables can be added here
+
+  // Credits table - stores user credit balances
+  credits: defineTable({
+    userId: v.id("users"),
+    balance: v.number(), // Current credit balance
+    lastUpdated: v.number(), // Timestamp of last update
+  })
+    .index("by_userId", ["userId"]),
+
+  // Feedback table - stores user feedback submissions
+  feedback: defineTable({
+    userId: v.id("users"),
+    userEmail: v.union(v.string(), v.null()),
+    userName: v.union(v.string(), v.null()),
+    type: v.union(
+      v.literal("bug"),
+      v.literal("feature"),
+      v.literal("improvement"),
+      v.literal("other")
+    ),
+    message: v.string(),
+    page: v.union(v.string(), v.null()),
+    status: v.union(
+      v.literal("new"),
+      v.literal("reviewed"),
+      v.literal("resolved"),
+      v.literal("dismissed")
+    ),
+    createdAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_status", ["status"])
+    .index("by_type", ["type"]),
+
+  // Rate limiting table - tracks user actions for anti-spam protection
+  rateLimits: defineTable({
+    userId: v.id("users"),
+    action: v.string(), // Action type: "feedback", "credit_use", etc.
+    timestamp: v.number(), // When the action occurred
+  })
+    .index("by_user_action", ["userId", "action"])
+    .index("by_timestamp", ["timestamp"]), // For cleanup of old records
 });
 
 export default schema;

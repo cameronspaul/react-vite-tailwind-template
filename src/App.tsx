@@ -25,11 +25,15 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import BlogIndex from './pages/blog/BlogIndex'
 import BlogPost from './pages/blog/BlogPost'
 import { GoogleAnalytics } from './components/GoogleAnalytics'
+import { useAuthToast } from './hooks/useAuthToast'
 
 
 function AppContent() {
   const theme = useAppStore((s) => s.theme)
   const { pathname } = useLocation()
+
+  // Auth toast notifications (sign in welcome)
+  useAuthToast()
 
   useEffect(() => {
     const root = document.documentElement

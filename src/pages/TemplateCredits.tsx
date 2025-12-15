@@ -12,7 +12,8 @@ import {
     CardHeader,
     CardTitle,
 } from "../components/ui/card";
-import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { toast } from "sonner";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
 
@@ -97,6 +98,9 @@ export const CreditsPage = () => {
     useEffect(() => {
         if (!showSuccess) return;
         void refreshBilling();
+        toast.success("Purchase Successful!", {
+            description: "Your credits will be added shortly.",
+        });
     }, [refreshBilling, showSuccess]);
 
     const formatPrice = (amount: number | undefined, currency: string = "USD") => {
@@ -139,10 +143,16 @@ export const CreditsPage = () => {
             } else {
                 console.error("Checkout error:", result.error);
                 capture('credits_checkout_error', { bundle_id: creditPackage.id, error: result.error });
+                toast.error("Checkout Failed", {
+                    description: result.error || "Unable to create checkout session. Please try again.",
+                });
             }
         } catch (error) {
             console.error("Failed to create checkout session:", error);
             capture('credits_checkout_error', { bundle_id: creditPackage.id, error: String(error) });
+            toast.error("Checkout Failed", {
+                description: "An unexpected error occurred. Please try again.",
+            });
         } finally {
             setLoadingProductId(null);
         }
@@ -268,13 +278,7 @@ export const CreditsPage = () => {
                     </p>
                 </div>
 
-                {showSuccess && (
-                    <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
-                        <CheckCircle className="h-4 w-4 text-primary" />
-                        <AlertTitle>Purchase Successful!</AlertTitle>
-                        <AlertDescription>Your credits have been added to your account.</AlertDescription>
-                    </Alert>
-                )}
+
 
                 {/* Credits Packages Grid */}
                 <div className="mb-16">

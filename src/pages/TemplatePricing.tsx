@@ -14,7 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
-import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { toast } from "sonner";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
 import { Check, AlertTriangle, CheckCircle } from "lucide-react";
@@ -53,6 +54,9 @@ export const ProductList = () => {
   useEffect(() => {
     if (!showSuccess) return;
     void refreshBilling();
+    toast.success("Payment Successful!", {
+      description: "Your account has been upgraded.",
+    });
   }, [refreshBilling, showSuccess]);
 
   const formatPrice = (amount: number | undefined, currency: string = "USD") => {
@@ -79,10 +83,16 @@ export const ProductList = () => {
       } else {
         console.error("Checkout error:", result.error);
         capture('checkout_error', { product_id: polarProductId, error: result.error });
+        toast.error("Checkout Failed", {
+          description: result.error || "Unable to create checkout session. Please try again.",
+        });
       }
     } catch (error) {
       console.error("Failed to create checkout session:", error);
       capture('checkout_error', { product_id: polarProductId, error: String(error) });
+      toast.error("Checkout Failed", {
+        description: "An unexpected error occurred. Please try again.",
+      });
     } finally {
       setLoadingProductId(null);
     }
@@ -270,13 +280,7 @@ export const ProductList = () => {
           </p>
         </div>
 
-        {showSuccess && (
-          <Alert className="bg-primary/10 border-primary/20 text-foreground mb-8 max-w-2xl mx-auto">
-            <CheckCircle className="h-4 w-4 text-primary" />
-            <AlertTitle>Payment Successful!</AlertTitle>
-            <AlertDescription>Your account has been upgraded.</AlertDescription>
-          </Alert>
-        )}
+
 
         {billing.isPremium && (
           <div className="flex justify-center mb-12">

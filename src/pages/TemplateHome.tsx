@@ -28,6 +28,7 @@ import { PageSEO } from '../components/SEO'
 import { usePostHogAnalytics } from '../hooks/usePostHogAnalytics'
 import { useDialog, ConfirmDialogs, AlertDialogs } from '../components/Modal'
 import { MessageSquare } from 'lucide-react'
+import { toast } from 'sonner'
 
 function Home() {
   const { capture } = usePostHogAnalytics()
@@ -264,22 +265,18 @@ function CreditsDemo() {
   const useCredits = useMutation(api.credits.useCredits);
   const { capture } = usePostHogAnalytics();
   const [isUsing, setIsUsing] = useState(false);
-  const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
 
   const handleUseCredits = async () => {
     capture('credits_used', { amount: 10, current_balance: balance });
     setIsUsing(true);
-    setLastResult(null);
     try {
       const result = await useCredits({ amount: 10 });
-      setLastResult({
-        success: true,
-        message: `Successfully used 10 credits! Remaining: ${result.remainingBalance}`
+      toast.success("Credits Used Successfully!", {
+        description: `Used 10 credits. Remaining: ${result.remainingBalance}`,
       });
     } catch (error) {
-      setLastResult({
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to use credits'
+      toast.error("Failed to Use Credits", {
+        description: error instanceof Error ? error.message : 'An error occurred',
       });
     } finally {
       setIsUsing(false);
@@ -376,16 +373,6 @@ function CreditsDemo() {
             </div>
           )}
         </div>
-
-        {/* Result Message */}
-        {lastResult && (
-          <div className={`p-4 rounded-lg text-center text-sm font-medium ${lastResult.success
-            ? 'bg-green-500/10 text-green-600 dark:text-green-400'
-            : 'bg-red-500/10 text-red-600 dark:text-red-400'
-            }`}>
-            {lastResult.message}
-          </div>
-        )}
 
         {/* Info */}
         <p className="text-xs text-muted-foreground text-center">

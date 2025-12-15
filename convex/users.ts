@@ -107,6 +107,22 @@ export const deleteUser = mutation({
       await ctx.db.delete(account._id);
     }
 
+    // Delete all credits for this user
+    const credits = await ctx.db.query("credits")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    if (credits) {
+      await ctx.db.delete(credits._id);
+    }
+
+    // Delete all feedback for this user
+    const feedbackList = await ctx.db.query("feedback")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .collect();
+    for (const feedback of feedbackList) {
+      await ctx.db.delete(feedback._id);
+    }
+
     // Finally, delete the user record
     await ctx.db.delete(userId);
 

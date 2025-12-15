@@ -66,26 +66,31 @@ http.route({
           // Determine email type based on product
           let emailType: EmailType = "generic_purchase";
           let isCreditsBundle = false;
+          let isPremiumPurchase = false;
 
           switch (productId) {
             // Premium products
             case process.env.VITE_POLAR_PRODUCT_ID_MONTHLY:
               console.log("User bought Premium 1 Month");
               emailType = "premium_monthly";
+              isPremiumPurchase = true;
               break;
             case process.env.VITE_POLAR_PRODUCT_ID_QUARTERLY:
               console.log("User bought Premium Quarterly");
               emailType = "premium_quarterly";
+              isPremiumPurchase = true;
               break;
             case process.env.VITE_POLAR_PRODUCT_ID_SEMIANNUAL:
               console.log("User bought Premium Semiannual");
               emailType = "premium_semiannual";
+              isPremiumPurchase = true;
               break;
 
             // Lifetime products
             case process.env.VITE_POLAR_PRODUCT_ID_LIFETIME:
               console.log("User bought Premium Lifetime");
               emailType = "premium_lifetime";
+              isPremiumPurchase = true;
 
               // Cancel all existing subscriptions when lifetime is purchased
               const customerId = event.data.customer?.id || event.data.customer_id;
@@ -140,6 +145,28 @@ http.route({
             }
           } else if (isCreditsBundle) {
             console.warn("Missing customer email or credits count for credit bundle purchase");
+          }
+
+          // Add 500 bonus credits for premium subscribers (subscriptions and lifetime)
+          if (isPremiumPurchase && customerEmail) {
+            try {
+              const premiumUserId = await ctx.runQuery(internal.users.getUserIdByEmail, {
+                email: customerEmail,
+              });
+
+              if (premiumUserId) {
+                await ctx.runMutation(internal.credits.addCredits, {
+                  userId: premiumUserId,
+                  amount: 500,
+                });
+                console.log(`Added 500 bonus credits to premium subscriber ${premiumUserId}`);
+              } else {
+                console.error(`No user found with email ${customerEmail} for premium credit bonus`);
+              }
+            } catch (creditError) {
+              console.error("Failed to add premium bonus credits:", creditError);
+              // Don't fail the webhook if credits fail
+            }
           }
 
           // Send purchase confirmation email

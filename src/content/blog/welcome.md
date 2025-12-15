@@ -1,9 +1,9 @@
 ---
-title: "Welcome to Our Engineering Blog"
-slug: "welcome-to-our-engineering-blog"
-date: "2023-10-27"
-description: "This is the first post on our new engineering blog. We discuss tech, life, and everything in between."
-author: "Engineering Team"
+title: "Welcome to Our Blog"
+slug: "welcome-to-our-blog"
+date: "2025-12-15"
+description: "This is an example file for our blog for our boilerplate."
+author: "Cameron"
 ---
 
 # Welcome!

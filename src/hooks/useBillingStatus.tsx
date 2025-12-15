@@ -39,13 +39,24 @@ export function BillingProvider({ children }: { children: React.ReactNode }) {
     void refresh();
   }, [currentUser, refresh, clear]);
 
+  // Determine status: if user is explicitly not logged in (null), we're ready but with no data
+  // If user is undefined (loading) and no cached billing, we're loading
+  // Otherwise check hydrated/refreshing states
+  const status = currentUser === null
+    ? "ready"
+    : (currentUser === undefined && !hydrated && !billing)
+      ? "loading"
+      : refreshing
+        ? "refreshing"
+        : "ready";
+
   const value = useMemo<BillingContextValue>(() => ({
     data: currentUser === null ? null : billing,
-    status: !hydrated && !billing ? "loading" : refreshing ? "refreshing" : "ready",
+    status,
     isPremium: Boolean(billing?.isPremium),
     isLifetime: Boolean(billing?.isLifetime),
     refresh,
-  }), [billing, hydrated, refreshing, currentUser, refresh]);
+  }), [billing, status, currentUser, refresh]);
 
   return <BillingContext.Provider value={value}>{children}</BillingContext.Provider>;
 }

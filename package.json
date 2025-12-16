@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "sitemap": "node scripts/generate-sitemap.js",
-    "postbuild": "npm run sitemap"
+    "postbuild": "npm run sitemap",
+    "jwt": "node scripts/generate-auth-keys.mjs"
   },
   "dependencies": {
     "@auth/core": "^0.37.0",
